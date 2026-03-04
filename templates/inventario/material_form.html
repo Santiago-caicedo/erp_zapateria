@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="form-card mx-auto">
+    <div class="form-card-header">
+        <h2>{{ titulo }}</h2>
+        <p>Selecciona el tipo y completa los datos del material.</p>
+    </div>
+    <div class="form-card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_tipo">Tipo de Material</label>
+                {{ form.tipo }}
+                {% if form.tipo.errors %}<div class="invalid-feedback d-block">{{ form.tipo.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_nombre">Nombre</label>
+                <input type="text" name="nombre" id="id_nombre"
+                       value="{{ form.nombre.value|default:'' }}"
+                       class="form-control {% if form.nombre.errors %}is-invalid{% endif %}"
+                       placeholder="Nombre del material" required>
+                {% if form.nombre.errors %}<div class="invalid-feedback">{{ form.nombre.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_unidad_medida">Unidad de Medida</label>
+                <input type="text" name="unidad_medida" id="id_unidad_medida"
+                       value="{{ form.unidad_medida.value|default:'' }}"
+                       class="form-control {% if form.unidad_medida.errors %}is-invalid{% endif %}"
+                       placeholder="Ej: cm2, metros, unidades" required>
+                <div class="form-text">Ej: cm2, metros, unidades</div>
+                {% if form.unidad_medida.errors %}<div class="invalid-feedback">{{ form.unidad_medida.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_cantidad_stock">Cantidad en Stock</label>
+                <input type="number" step="0.01" name="cantidad_stock" id="id_cantidad_stock"
+                       value="{{ form.cantidad_stock.value|default:'0' }}"
+                       class="form-control {% if form.cantidad_stock.errors %}is-invalid{% endif %}"
+                       placeholder="0.00">
+                {% if form.cantidad_stock.errors %}<div class="invalid-feedback">{{ form.cantidad_stock.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+                <a href="{% url 'inventario:material_lista' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

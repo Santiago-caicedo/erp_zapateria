@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block titulo %}Tipos de Material{% endblock %}
+{% block page_title %}Tipos de Material{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>Tipos de Material</h2>
+    <a href="{% url 'inventario:tipo_material_crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Tipo</a>
+</div>
+
+<div class="card border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Materiales</th>
+                        <th style="width:160px">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tipos %}
+                    <tr>
+                        <td class="fw-semibold">{{ t.nombre }}</td>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ t.materiales.count }}</span></td>
+                        <td>
+                            <a href="{% url 'inventario:tipo_material_editar' t.pk %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'inventario:tipo_material_eliminar' t.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-trash3"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center text-muted py-4">No hay tipos registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

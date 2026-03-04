@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Quitar Proceso{% endblock %}
+{% block page_title %}Quitar Proceso{% endblock %}
+
+{% block contenido %}
+<div class="confirm-card mx-auto">
+    <div class="confirm-card-body">
+        <div class="confirm-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h4>Quitar proceso</h4>
+        <p>¿Quitar <strong>{{ proceso_ref.proceso_base.nombre }}</strong> de la referencia <strong>{{ proceso_ref.referencia.codigo }}</strong>?</p>
+    </div>
+    <div class="confirm-card-actions">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Quitar</button>
+        </form>
+        <a href="{% url 'inventario:referencia_detalle' proceso_ref.referencia.pk %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</div>
+{% endblock %}

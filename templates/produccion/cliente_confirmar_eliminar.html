@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Eliminar Cliente{% endblock %}
+{% block page_title %}Eliminar Cliente{% endblock %}
+
+{% block contenido %}
+<div class="confirm-card mx-auto">
+    <div class="confirm-card-body">
+        <div class="confirm-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h4>Eliminar cliente</h4>
+        <p>¿Estás seguro que deseas eliminar a <strong>{{ cliente.nombre }}</strong>? Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="confirm-card-actions">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Eliminar</button>
+        </form>
+        <a href="{% url 'produccion:cliente_lista' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</div>
+{% endblock %}

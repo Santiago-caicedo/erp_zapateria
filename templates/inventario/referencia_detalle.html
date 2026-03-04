@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ referencia.codigo }}{% endblock %}
+{% block page_title %}Detalle de Referencia{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>{{ referencia.codigo }}</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'inventario:referencia_editar' referencia.pk %}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
+        <a href="{% url 'inventario:referencia_lista' %}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="card border-0 mb-4" style="max-width:600px">
+    <div class="card-body p-0">
+        <table class="table detail-table mb-0">
+            <tr><th>Descripción</th><td>{{ referencia.descripcion|default:"—" }}</td></tr>
+            <tr><th>Talla</th><td>{{ referencia.talla }}</td></tr>
+            <tr><th>Color</th><td>{{ referencia.color }}</td></tr>
+            <tr><th>Precio Venta</th><td class="fw-semibold">${{ referencia.precio_venta }}</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Materiales -->
+    <div class="col-lg-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-box-seam-fill me-1 text-muted"></i> Materiales</span>
+                <a href="{% url 'inventario:consumo_agregar' referencia.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>Material</th><th>Cantidad</th><th>Unidad</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in consumos %}
+                        <tr>
+                            <td class="fw-semibold">{{ c.material.nombre }}</td>
+                            <td>{{ c.cantidad_consumida }}</td>
+                            <td><span class="text-muted">{{ c.material.unidad_medida }}</span></td>
+                            <td><a href="{% url 'inventario:consumo_eliminar' c.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted py-3">Sin materiales asignados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Procesos -->
+    <div class="col-lg-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-gear-fill me-1 text-muted"></i> Procesos</span>
+                <a href="{% url 'inventario:proceso_ref_agregar' referencia.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>Proceso</th><th>Precio M.O.</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for p in procesos %}
+                        <tr>
+                            <td class="fw-semibold">{{ p.proceso_base.nombre }}</td>
+                            <td>${{ p.precio_mano_obra }}</td>
+                            <td><a href="{% url 'inventario:proceso_ref_eliminar' p.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">Sin procesos asignados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

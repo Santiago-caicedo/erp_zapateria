@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Eliminar Orden{% endblock %}
+{% block page_title %}Eliminar Orden{% endblock %}
+
+{% block contenido %}
+<div class="confirm-card mx-auto">
+    <div class="confirm-card-body">
+        <div class="confirm-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h4>Eliminar orden</h4>
+        <p>¿Estás seguro que deseas eliminar la <strong>Orden #{{ orden.pk }}</strong> de <strong>{{ orden.cliente.nombre }}</strong>? Se eliminarán todos sus detalles y registros.</p>
+    </div>
+    <div class="confirm-card-actions">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Eliminar</button>
+        </form>
+        <a href="{% url 'produccion:orden_lista' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ empleado.nombre }}{% endblock %}
+{% block page_title %}Detalle de Empleado{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>{{ empleado.nombre }}</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'empleados:editar' empleado.pk %}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
+        <a href="{% url 'empleados:lista' %}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="card border-0" style="max-width:600px">
+    <div class="card-body p-0">
+        <table class="table detail-table mb-0">
+            <tr><th>Documento</th><td>{{ empleado.documento }}</td></tr>
+            <tr><th>Teléfono</th><td>{{ empleado.telefono|default:"—" }}</td></tr>
+            <tr><th>Rol</th><td>{{ empleado.rol }}</td></tr>
+            <tr><th>Fecha de Ingreso</th><td>{{ empleado.fecha_ingreso }}</td></tr>
+        </table>
+    </div>
+</div>
+{% endblock %}

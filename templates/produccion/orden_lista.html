@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block titulo %}Órdenes de Producción{% endblock %}
+{% block page_title %}Órdenes de Producción{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>Órdenes</h2>
+    <a href="{% url 'produccion:orden_crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva Orden</a>
+</div>
+
+<div class="card border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Cliente</th>
+                        <th>Creación</th>
+                        <th>Entrega</th>
+                        <th>Estado</th>
+                        <th style="width:160px">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in ordenes %}
+                    <tr>
+                        <td class="fw-semibold">{{ o.pk }}</td>
+                        <td>{{ o.cliente.nombre }}</td>
+                        <td>{{ o.fecha_creacion }}</td>
+                        <td>{{ o.fecha_entrega }}</td>
+                        <td>
+                            <span class="badge {% if o.estado == 'Pendiente' %}bg-secondary{% elif o.estado == 'En Proceso' %}bg-primary{% elif o.estado == 'Finalizado' %}bg-success{% else %}bg-info{% endif %}">
+                                {{ o.estado }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'produccion:orden_detalle' o.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'produccion:orden_editar' o.pk %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No hay órdenes registradas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

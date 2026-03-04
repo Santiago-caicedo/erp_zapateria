@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block titulo %}Orden #{{ orden.pk }}{% endblock %}
+{% block page_title %}Orden #{{ orden.pk }}{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>Orden #{{ orden.pk }}</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'produccion:orden_editar' orden.pk %}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
+        <a href="{% url 'produccion:orden_eliminar' orden.pk %}" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Eliminar</a>
+        <a href="{% url 'produccion:orden_lista' %}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="card border-0 mb-4" style="max-width:600px">
+    <div class="card-body p-0">
+        <table class="table detail-table mb-0">
+            <tr><th>Cliente</th><td>{{ orden.cliente.nombre }}</td></tr>
+            <tr><th>Creación</th><td>{{ orden.fecha_creacion }}</td></tr>
+            <tr><th>Entrega</th><td>{{ orden.fecha_entrega }}</td></tr>
+            <tr>
+                <th>Estado</th>
+                <td>
+                    <span class="badge {% if orden.estado == 'Pendiente' %}bg-secondary{% elif orden.estado == 'En Proceso' %}bg-primary{% elif orden.estado == 'Finalizado' %}bg-success{% else %}bg-info{% endif %}">
+                        {{ orden.estado }}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- Líneas de la orden -->
+<div class="card border-0">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-tags-fill me-1 text-muted"></i> Referencias en esta orden</span>
+        <a href="{% url 'produccion:detalle_agregar' orden.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar</a>
+    </div>
+    <div class="card-body">
+        {% for d in detalles %}
+        <div class="card border mb-3">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-2">
+                <div>
+                    <span class="fw-bold">{{ d.referencia.codigo }}</span>
+                    <span class="text-muted mx-2">|</span>
+                    <span>{{ d.cantidad_solicitada }} pares</span>
+                    <span class="text-muted mx-1">-</span>
+                    <span class="text-success">{{ d.cantidad_fabricada }} fabricados</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'produccion:registro_agregar' d.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Trabajo</a>
+                    <a href="{% url 'produccion:detalle_eliminar' d.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a>
+                </div>
+            </div>
+            {% if d.registros_trabajo.all %}
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Empleado</th>
+                            <th>Proceso</th>
+                            <th>Cant.</th>
+                            <th>Pago</th>
+                            <th>Fecha</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in d.registros_trabajo.all %}
+                        <tr>
+                            <td>{{ r.empleado.nombre }}</td>
+                            <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
+                            <td>{{ r.cantidad_realizada }}</td>
+                            <td class="fw-semibold">${{ r.total_pago }}</td>
+                            <td class="text-muted">{{ r.fecha }}</td>
+                            <td><a href="{% url 'produccion:registro_eliminar' r.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="card-body">
+                <p class="text-muted mb-0 small">Sin registros de trabajo aún.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-center text-muted py-3">No hay referencias en esta orden.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

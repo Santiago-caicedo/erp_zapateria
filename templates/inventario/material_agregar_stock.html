@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block titulo %}Agregar Stock{% endblock %}
+{% block page_title %}Agregar Stock{% endblock %}
+
+{% block contenido %}
+<div class="form-card mx-auto" style="max-width:480px">
+    <div class="form-card-header">
+        <h2>Agregar Stock</h2>
+        <p><strong>{{ material.nombre }}</strong> — Stock actual: <span class="text-success fw-bold" id="stockActual">{{ material.cantidad_stock }}</span> {{ material.unidad_medida }}</p>
+    </div>
+    <div class="form-card-body">
+        <form method="post">
+            {% csrf_token %}
+            <!-- Campo visual con formato -->
+            <div class="form-group">
+                <label for="id_cantidad_display">Cantidad a agregar ({{ material.unidad_medida }})</label>
+                <input type="text" id="id_cantidad_display" inputmode="decimal"
+                       class="form-control form-control-lg fw-bold" placeholder="0" autofocus
+                       style="font-size:1.5rem; letter-spacing:0.02em">
+                <!-- Campo oculto que va al server -->
+                <input type="hidden" name="cantidad" id="id_cantidad">
+                <div class="form-text mt-2">
+                    Nuevo stock: <span class="fw-bold text-primary" id="nuevoStock">{{ material.cantidad_stock }}</span> {{ material.unidad_medida }}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="btnSubmit" disabled><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+                <a href="{% url 'inventario:material_lista' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const display = document.getElementById('id_cantidad_display');
+const hidden = document.getElementById('id_cantidad');
+const btnSubmit = document.getElementById('btnSubmit');
+const nuevoStock = document.getElementById('nuevoStock');
+const stockActual = document.getElementById('stockActual');
+const stockBase = parseFloat('{{ material.cantidad_stock }}'.replace(',', '.'));
+
+function formatNumber(num) {
+    const parts = num.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return parts.join(',');
+}
+
+// Formatear el stock actual al cargar
+stockActual.textContent = formatNumber(stockBase);
+nuevoStock.textContent = formatNumber(stockBase);
+
+display.addEventListener('input', function() {
+    // Limpiar: solo permitir dígitos y una coma
+    let raw = this.value.replace(/[^0-9,]/g, '');
+
+    // Solo una coma
+    const parts = raw.split(',');
+    if (parts.length > 2) {
+        raw = parts[0] + ',' + parts.slice(1).join('');
+    }
+
+    // Formatear parte entera con separadores de miles (punto)
+    const commaIdx = raw.indexOf(',');
+    let intPart = commaIdx >= 0 ? raw.substring(0, commaIdx) : raw;
+    const decPart = commaIdx >= 0 ? raw.substring(commaIdx) : '';
+
+    // Quitar ceros a la izquierda
+    intPart = intPart.replace(/^0+(?=\d)/, '');
+
+    // Agregar puntos de miles
+    intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    this.value = intPart + decPart;
+
+    // Valor real para el hidden (formato con punto decimal)
+    const realValue = (intPart.replace(/\./g, '') + decPart.replace(',', '.')).replace(/^\./, '0.');
+    hidden.value = realValue;
+
+    // Calcular nuevo stock
+    const cantidad = parseFloat(realValue) || 0;
+    btnSubmit.disabled = cantidad <= 0;
+
+    if (cantidad > 0) {
+        nuevoStock.textContent = formatNumber(Math.round((stockBase + cantidad) * 100) / 100);
+    } else {
+        nuevoStock.textContent = formatNumber(stockBase);
+    }
+});
+</script>
+{% endblock %}

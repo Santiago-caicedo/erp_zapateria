@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nómina{% endblock %}
+{% block page_title %}Nómina{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>Nómina</h2>
+</div>
+
+<div class="card border-0 mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-sm-4 col-lg-3">
+                <label class="form-label">Desde</label>
+                <input type="date" name="fecha_desde" value="{{ fecha_desde|default:'' }}" class="form-control" required>
+            </div>
+            <div class="col-sm-4 col-lg-3">
+                <label class="form-label">Hasta</label>
+                <input type="date" name="fecha_hasta" value="{{ fecha_hasta|default:'' }}" class="form-control" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Consultar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if resultados %}
+<div class="card border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Total Pares</th>
+                        <th>Total Pago</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in resultados %}
+                    <tr>
+                        <td class="fw-semibold">{{ r.empleado__nombre }}</td>
+                        <td>{{ r.total_pares }}</td>
+                        <td class="fw-bold text-success">${{ r.total_pago }}</td>
+                        <td>
+                            <a href="{% url 'produccion:nomina_detalle' r.empleado__id %}?fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}" class="btn btn-sm btn-primary"><i class="bi bi-eye me-1"></i>Detalle</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% elif fecha_desde %}
+<div class="card border-0">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-inbox text-muted" style="font-size:2.5rem"></i>
+        <p class="text-muted mt-2">No se encontraron registros en este rango de fechas.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inventario{% endblock %}
+{% block page_title %}Centro de Inventario{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border: none;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .stat-card .stat-icon {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .stat-card .stat-value { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .stat-card .stat-label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .tipo-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+    .tipo-card:hover { box-shadow: var(--shadow-md); }
+    .tipo-card-header {
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, rgba(79,110,247,0.04), rgba(139,92,246,0.04));
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .tipo-card-header .tipo-icon {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    .tipo-card-header h6 { margin: 0; font-weight: 700; font-size: 0.9rem; }
+
+    .material-row {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid #f0f2f8;
+        transition: var(--transition);
+        gap: 1rem;
+    }
+    .material-row:last-child { border-bottom: none; }
+    .material-row:hover { background: rgba(79,110,247,0.03); }
+
+    .material-info { flex: 1; min-width: 0; }
+    .material-info .mat-name { font-weight: 600; font-size: 0.875rem; color: var(--text-primary); }
+    .material-info .mat-unit { font-size: 0.75rem; color: var(--text-secondary); }
+
+    .stock-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        min-width: 70px;
+        justify-content: center;
+    }
+    .stock-ok { background: #ecfdf5; color: #065f46; }
+    .stock-low { background: #fffbeb; color: #92400e; }
+    .stock-out { background: #fef2f2; color: #991b1b; }
+
+    .material-actions {
+        display: flex;
+        gap: 0.35rem;
+        flex-shrink: 0;
+    }
+    .material-actions .btn {
+        width: 32px; height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    .search-box {
+        position: relative;
+    }
+    .search-box i {
+        position: absolute;
+        left: 0.85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    .search-box input {
+        padding-left: 2.5rem;
+        border-radius: 20px;
+        border: 1.5px solid var(--border);
+        font-size: 0.85rem;
+    }
+    .search-box input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+    }
+    .empty-state i { font-size: 2.5rem; color: #c4cbde; }
+    .empty-state p { color: var(--text-secondary); margin-top: 0.75rem; font-size: 0.9rem; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+        <h2 class="mb-1" style="font-size:1.6rem; font-weight:800">Inventario</h2>
+        <p class="text-muted mb-0" style="font-size:0.85rem">Control y gestión de materiales por categoría.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'inventario:tipo_material_lista' %}" class="btn btn-secondary"><i class="bi bi-collection me-1"></i>Tipos</a>
+        <a href="{% url 'inventario:material_crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Material</a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#4f6ef7,#6c8cff); color:#fff"><i class="bi bi-box-seam-fill"></i></div>
+                <div>
+                    <div class="stat-value">{{ total_materiales }}</div>
+                    <div class="stat-label">Materiales</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa); color:#fff"><i class="bi bi-collection-fill"></i></div>
+                <div>
+                    <div class="stat-value">{{ total_tipos }}</div>
+                    <div class="stat-label">Categorías</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#fff"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div>
+                    <div class="stat-value">{{ stock_bajo }}</div>
+                    <div class="stat-label">Stock Bajo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#ef4444,#f87171); color:#fff"><i class="bi bi-x-circle-fill"></i></div>
+                <div>
+                    <div class="stat-value">{{ sin_stock }}</div>
+                    <div class="stat-label">Sin Stock</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Buscador -->
+<div class="search-box mb-4" style="max-width:360px">
+    <i class="bi bi-search"></i>
+    <input type="text" id="buscadorMaterial" class="form-control" placeholder="Buscar material...">
+</div>
+
+<!-- Categorías -->
+<div class="row g-4" id="contenedorTipos">
+    {% for tipo in tipos %}
+    <div class="col-12 col-lg-6 tipo-col">
+        <div class="tipo-card">
+            <div class="tipo-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="tipo-icon" style="background:var(--accent-soft); color:var(--accent)"><i class="bi bi-collection-fill"></i></div>
+                    <h6>{{ tipo.nombre }}</h6>
+                </div>
+                <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:0.7rem">{{ tipo.materiales.count }} items</span>
+            </div>
+            <div class="tipo-materiales">
+                {% for m in tipo.materiales.all %}
+                <div class="material-row" data-nombre="{{ m.nombre|lower }}">
+                    <div class="material-info">
+                        <div class="mat-name">{{ m.nombre }}</div>
+                        <div class="mat-unit">{{ m.unidad_medida }}</div>
+                    </div>
+                    <div>
+                        {% if m.cantidad_stock <= 0 %}
+                            <span class="stock-badge stock-out"><i class="bi bi-x-circle-fill"></i> 0</span>
+                        {% elif m.cantidad_stock <= 10 %}
+                            <span class="stock-badge stock-low"><i class="bi bi-exclamation-triangle-fill"></i> {{ m.cantidad_stock }}</span>
+                        {% else %}
+                            <span class="stock-badge stock-ok"><i class="bi bi-check-circle-fill"></i> {{ m.cantidad_stock }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="material-actions">
+                        <a href="{% url 'inventario:material_agregar_stock' m.pk %}" class="btn btn-success" title="Agregar stock"><i class="bi bi-plus-lg"></i></a>
+                        <a href="{% url 'inventario:material_editar' m.pk %}" class="btn btn-warning" title="Editar"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'inventario:material_eliminar' m.pk %}" class="btn btn-danger" title="Eliminar"><i class="bi bi-trash3"></i></a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state" style="padding:2rem 1rem">
+                    <i class="bi bi-inbox"></i>
+                    <p>Sin materiales en esta categoría.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No hay tipos de material. <a href="{% url 'inventario:tipo_material_crear' %}">Crea el primero</a>.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('buscadorMaterial').addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.tipo-col').forEach(col => {
+        const rows = col.querySelectorAll('.material-row');
+        let visible = 0;
+        rows.forEach(row => {
+            const match = row.dataset.nombre.includes(q);
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        // Ocultar categoría entera si no hay resultados
+        col.style.display = (q && visible === 0) ? 'none' : '';
+    });
+});
+</script>
+{% endblock %}

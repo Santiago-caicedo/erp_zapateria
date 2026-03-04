@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="form-card mx-auto">
+    <div class="form-card-header">
+        <h2>Registrar Trabajo</h2>
+        <p>{{ detalle.referencia.codigo }} — Orden #{{ detalle.orden.pk }}</p>
+    </div>
+    <div class="form-card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_empleado">Empleado</label>
+                {{ form.empleado }}
+                {% if form.empleado.errors %}<div class="invalid-feedback d-block">{{ form.empleado.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_proceso_referencia">Proceso</label>
+                {{ form.proceso_referencia }}
+                {% if form.proceso_referencia.errors %}<div class="invalid-feedback d-block">{{ form.proceso_referencia.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_cantidad_realizada">Cantidad Realizada</label>
+                <input type="number" name="cantidad_realizada" id="id_cantidad_realizada"
+                       value="{{ form.cantidad_realizada.value|default:'' }}"
+                       class="form-control {% if form.cantidad_realizada.errors %}is-invalid{% endif %}"
+                       placeholder="0" required min="1">
+                {% if form.cantidad_realizada.errors %}<div class="invalid-feedback">{{ form.cantidad_realizada.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+                <a href="{% url 'produccion:orden_detalle' detalle.orden.pk %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
