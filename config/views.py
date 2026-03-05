@@ -15,8 +15,8 @@ def dashboard(request):
 
     ultimas_ordenes = (
         OrdenProduccion.objects
-        .select_related('cliente')
-        .order_by('-fecha_creacion')[:5]
+        .select_related('cliente', 'referencia')
+        .order_by('-numero')[:5]
     )
 
     context = {

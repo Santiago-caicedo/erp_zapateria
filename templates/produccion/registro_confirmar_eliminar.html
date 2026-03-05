@@ -15,7 +15,7 @@
             {% csrf_token %}
             <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Eliminar</button>
         </form>
-        <a href="{% url 'produccion:orden_detalle' registro.detalle_orden.orden.pk %}" class="btn btn-secondary">Cancelar</a>
+        <a href="{% url 'produccion:orden_detalle' registro.orden.pk %}" class="btn btn-secondary">Cancelar</a>
     </div>
 </div>
 {% endblock %}

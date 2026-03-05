@@ -1,94 +1,223 @@
 {% extends "base.html" %}
 
-{% block titulo %}Orden #{{ orden.pk }}{% endblock %}
-{% block page_title %}Orden #{{ orden.pk }}{% endblock %}
+{% block titulo %}Orden #{{ orden.numero }}{% endblock %}
+{% block page_title %}Orden #{{ orden.numero }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .orden-img {
+        width: 140px;
+        height: 140px;
+        border-radius: var(--radius);
+        object-fit: cover;
+        border: 1.5px solid var(--border);
+        flex-shrink: 0;
+    }
+    .orden-img-placeholder {
+        width: 140px;
+        height: 140px;
+        border-radius: var(--radius);
+        background: var(--bg-body);
+        border: 1.5px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .talla-badge {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        background: var(--bg-body);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 0.5rem 0.75rem;
+        min-width: 60px;
+    }
+    .talla-badge .talla-num {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+    .talla-badge .talla-cant {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .total-pares-badge {
+        background: var(--accent-soft);
+        color: var(--accent);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .mat-need-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.875rem;
+    }
+    .mat-need-row:last-child { border-bottom: none; }
+</style>
+{% endblock %}
 
 {% block contenido %}
 <div class="page-header">
-    <h2>Orden #{{ orden.pk }}</h2>
+    <h2>Orden #{{ orden.numero }}</h2>
     <div class="d-flex gap-2">
+        <a href="{% url 'produccion:registro_agregar' orden.pk %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Registrar Trabajo</a>
         <a href="{% url 'produccion:orden_editar' orden.pk %}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
         <a href="{% url 'produccion:orden_eliminar' orden.pk %}" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Eliminar</a>
         <a href="{% url 'produccion:orden_lista' %}" class="btn btn-secondary">Volver</a>
     </div>
 </div>
 
-<div class="card border-0 mb-4" style="max-width:600px">
-    <div class="card-body p-0">
-        <table class="table detail-table mb-0">
-            <tr><th>Cliente</th><td>{{ orden.cliente.nombre }}</td></tr>
-            <tr><th>Creación</th><td>{{ orden.fecha_creacion }}</td></tr>
-            <tr><th>Entrega</th><td>{{ orden.fecha_entrega }}</td></tr>
-            <tr>
-                <th>Estado</th>
-                <td>
-                    <span class="badge {% if orden.estado == 'Pendiente' %}bg-secondary{% elif orden.estado == 'En Proceso' %}bg-primary{% elif orden.estado == 'Finalizado' %}bg-success{% else %}bg-info{% endif %}">
-                        {{ orden.estado }}
-                    </span>
-                </td>
-            </tr>
-        </table>
+<!-- Info principal -->
+<div class="card border-0 mb-4">
+    <div class="card-body">
+        <div class="d-flex gap-4 flex-wrap">
+            {% if orden.referencia.imagen %}
+                <img src="{{ orden.referencia.imagen.url }}" alt="{{ orden.referencia.codigo }}" class="orden-img">
+            {% else %}
+                <div class="orden-img-placeholder"><i class="bi bi-image text-muted" style="font-size:2.5rem"></i></div>
+            {% endif %}
+            <div class="flex-grow-1">
+                <table class="table detail-table mb-0">
+                    <tr><th style="width:160px">N° Orden</th><td class="fw-bold">{{ orden.numero }}</td></tr>
+                    <tr><th>Referencia</th><td class="fw-semibold">{{ orden.referencia.codigo }}</td></tr>
+                    <tr><th>Tipo de Zapato</th><td><span class="badge bg-primary bg-opacity-10 text-primary">{{ orden.referencia.tipo_zapato.nombre }}</span></td></tr>
+                    <tr><th>Cliente</th><td>{{ orden.cliente.nombre }}</td></tr>
+                    <tr><th>Fecha Creación</th><td>{{ orden.fecha_creacion }}</td></tr>
+                    <tr><th>Fecha Entrega</th><td>{{ orden.fecha_entrega }}</td></tr>
+                    <tr>
+                        <th>Estado</th>
+                        <td>
+                            <span class="badge {% if orden.estado == 'Pendiente' %}bg-secondary{% elif orden.estado == 'En Proceso' %}bg-primary{% elif orden.estado == 'Finalizado' %}bg-success{% else %}bg-info{% endif %}">
+                                {{ orden.estado }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Líneas de la orden -->
-<div class="card border-0">
+<!-- Tallas y total -->
+<div class="card border-0 mb-4">
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-tags-fill me-1 text-muted"></i> Referencias en esta orden</span>
-        <a href="{% url 'produccion:detalle_agregar' orden.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar</a>
+        <span><i class="bi bi-rulers me-1 text-muted"></i> Distribución por Tallas</span>
+        <div class="total-pares-badge">
+            <i class="bi bi-box-seam"></i> Total: {{ orden.cantidad_total }} pares
+        </div>
     </div>
     <div class="card-body">
-        {% for d in detalles %}
-        <div class="card border mb-3">
-            <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-2">
-                <div>
-                    <span class="fw-bold">{{ d.referencia.codigo }}</span>
-                    <span class="text-muted mx-2">|</span>
-                    <span>{{ d.cantidad_solicitada }} pares</span>
-                    <span class="text-muted mx-1">-</span>
-                    <span class="text-success">{{ d.cantidad_fabricada }} fabricados</span>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{% url 'produccion:registro_agregar' d.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Trabajo</a>
-                    <a href="{% url 'produccion:detalle_eliminar' d.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a>
-                </div>
+        <div class="d-flex gap-2 flex-wrap">
+            {% for t in tallas %}
+            <div class="talla-badge">
+                <span class="talla-num">Talla {{ t.numero }}</span>
+                <span class="talla-cant">{{ t.cantidad }}</span>
             </div>
-            {% if d.registros_trabajo.all %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Materiales necesarios -->
+    <div class="col-lg-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-box-seam-fill me-1 text-muted"></i> Materiales Necesarios
+                <small class="text-muted">(para {{ orden.cantidad_total }} pares)</small>
+            </div>
+            <div class="card-body">
+                {% for m in materiales_necesarios %}
+                <div class="mat-need-row">
+                    <div>
+                        <span class="fw-semibold">{{ m.material.nombre }}</span>
+                        <small class="text-muted ms-1">({{ m.material.tipo.nombre }})</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="fw-bold">{{ m.cantidad_total }}</span>
+                        <small class="text-muted">{{ m.material.unidad_medida }}</small>
+                        <br><small class="text-muted">{{ m.cantidad_unitaria }} x {{ orden.cantidad_total }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center mb-0">Sin materiales asignados a esta referencia.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Procesos -->
+    <div class="col-lg-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-gear-fill me-1 text-muted"></i> Procesos de esta Referencia
+            </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead>
-                        <tr>
-                            <th>Empleado</th>
-                            <th>Proceso</th>
-                            <th>Cant.</th>
-                            <th>Pago</th>
-                            <th>Fecha</th>
-                            <th></th>
-                        </tr>
+                        <tr><th>Proceso</th><th>Precio M.O. / par</th></tr>
                     </thead>
                     <tbody>
-                        {% for r in d.registros_trabajo.all %}
+                        {% for p in procesos %}
                         <tr>
-                            <td>{{ r.empleado.nombre }}</td>
-                            <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
-                            <td>{{ r.cantidad_realizada }}</td>
-                            <td class="fw-semibold">${{ r.total_pago }}</td>
-                            <td class="text-muted">{{ r.fecha }}</td>
-                            <td><a href="{% url 'produccion:registro_eliminar' r.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a></td>
+                            <td class="fw-semibold">{{ p.proceso_base.nombre }}</td>
+                            <td>${{ p.precio_mano_obra }}</td>
                         </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="text-center text-muted py-3">Sin procesos.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% else %}
-            <div class="card-body">
-                <p class="text-muted mb-0 small">Sin registros de trabajo aún.</p>
-            </div>
-            {% endif %}
         </div>
-        {% empty %}
-        <p class="text-center text-muted py-3">No hay referencias en esta orden.</p>
-        {% endfor %}
+    </div>
+</div>
+
+<!-- Registros de trabajo -->
+<div class="card border-0">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-person-workspace me-1 text-muted"></i> Registros de Trabajo</span>
+        <a href="{% url 'produccion:registro_agregar' orden.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Registrar</a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Empleado</th>
+                    <th>Proceso</th>
+                    <th>Cantidad</th>
+                    <th>Pago</th>
+                    <th>Fecha</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in registros %}
+                <tr>
+                    <td>{{ r.empleado.nombre }}</td>
+                    <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
+                    <td>{{ r.cantidad_realizada }} pares</td>
+                    <td class="fw-semibold">${{ r.total_pago }}</td>
+                    <td class="text-muted">{{ r.fecha }}</td>
+                    <td><a href="{% url 'produccion:registro_eliminar' r.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Sin registros de trabajo aún.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

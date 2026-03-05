@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block titulo %}Historial de Pagos{% endblock %}
+{% block page_title %}Historial de Pagos{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>Historial de Pagos</h2>
+    <a href="{% url 'produccion:nomina' %}" class="btn btn-secondary"><i class="bi bi-arrow-left me-1"></i>Volver a Nómina</a>
+</div>
+
+<div class="card border-0 mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-sm-5 col-lg-4">
+                <label class="form-label">Empleado</label>
+                <select name="empleado" class="form-select" required>
+                    <option value="">-- Seleccionar --</option>
+                    {% for e in empleados %}
+                    <option value="{{ e.pk }}" {% if empleado_seleccionado == e.pk|stringformat:"d" %}selected{% endif %}>{{ e.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Consultar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if registros %}
+<div class="card border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha Trabajo</th>
+                        <th>Fecha Pago</th>
+                        <th>Orden</th>
+                        <th>Referencia</th>
+                        <th>Proceso</th>
+                        <th>Cant.</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td>{{ r.fecha }}</td>
+                        <td>{{ r.fecha_pago }}</td>
+                        <td><a href="{% url 'produccion:orden_detalle' r.orden.pk %}" class="text-decoration-none">#{{ r.orden.numero }}</a></td>
+                        <td>{{ r.orden.referencia.codigo }}</td>
+                        <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
+                        <td>{{ r.cantidad_realizada }}</td>
+                        <td>${{ r.proceso_referencia.precio_mano_obra }}</td>
+                        <td class="fw-bold text-success">${{ r.total_pago }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% elif empleado_seleccionado %}
+<div class="card border-0">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-inbox text-muted" style="font-size:2.5rem"></i>
+        <p class="text-muted mt-2">No se encontraron pagos para este empleado.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

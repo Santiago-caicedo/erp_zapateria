@@ -8,7 +8,7 @@
     <div class="confirm-card-body">
         <div class="confirm-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
         <h4>Eliminar orden</h4>
-        <p>¿Estás seguro que deseas eliminar la <strong>Orden #{{ orden.pk }}</strong> de <strong>{{ orden.cliente.nombre }}</strong>? Se eliminarán todos sus detalles y registros.</p>
+        <p>¿Estás seguro que deseas eliminar la <strong>Orden #{{ orden.numero }}</strong> de <strong>{{ orden.cliente.nombre }}</strong> ({{ orden.referencia.codigo }})? Se eliminarán todos sus registros de trabajo.</p>
     </div>
     <div class="confirm-card-actions">
         <form method="post">

@@ -17,15 +17,17 @@ urlpatterns = [
     path('ordenes/<int:pk>/editar/', views.orden_editar, name='orden_editar'),
     path('ordenes/<int:pk>/eliminar/', views.orden_eliminar, name='orden_eliminar'),
 
-    # DetalleOrden (hijo de orden)
-    path('ordenes/<int:orden_pk>/detalle/agregar/', views.detalle_agregar, name='detalle_agregar'),
-    path('detalle/<int:pk>/eliminar/', views.detalle_eliminar, name='detalle_eliminar'),
-
-    # RegistroTrabajo (hijo de detalle)
-    path('detalle/<int:detalle_pk>/registro/agregar/', views.registro_agregar, name='registro_agregar'),
+    # RegistroTrabajo (hijo de orden)
+    path('ordenes/<int:orden_pk>/registro/agregar/', views.registro_agregar, name='registro_agregar'),
     path('registro/<int:pk>/eliminar/', views.registro_eliminar, name='registro_eliminar'),
+
+    # API
+    path('api/referencia/<int:pk>/', views.api_referencia_detalle, name='api_referencia_detalle'),
 
     # Nómina
     path('nomina/', views.nomina, name='nomina'),
-    path('nomina/<int:empleado_pk>/', views.nomina_detalle_empleado, name='nomina_detalle'),
+    path('nomina/historial/', views.nomina_historial, name='nomina_historial'),
+    path('nomina/<int:empleado_pk>/', views.nomina_detalle, name='nomina_detalle'),
+    path('nomina/<int:empleado_pk>/pdf/', views.nomina_pdf, name='nomina_pdf'),
+    path('nomina/<int:empleado_pk>/pagar/', views.nomina_marcar_pagado, name='nomina_marcar_pagado'),
 ]

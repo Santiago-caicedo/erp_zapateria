@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # 1. Tipos de Material (Capellada, Forro, Suela, etc.)
 class TipoMaterial(models.Model):
     nombre = models.CharField(max_length=100, unique=True, verbose_name="Tipo de Material")
@@ -10,6 +11,7 @@ class TipoMaterial(models.Model):
 
     def __str__(self):
         return self.nombre
+
 
 # 2. Catálogo de Materiales
 class Material(models.Model):
@@ -24,34 +26,52 @@ class Material(models.Model):
     def __str__(self):
         return f"{self.nombre} ({self.unidad_medida})"
 
-# 2. Catálogo de Procesos (Corte, Guarnición, etc.)
+
+# 3. Catálogo de Procesos (Corte, Guarnición, etc.)
 class ProcesoBase(models.Model):
     nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Proceso")
 
     def __str__(self):
         return self.nombre
 
-# 3. La Referencia (El Zapato)
-class Referencia(models.Model):
-    codigo = models.CharField(max_length=50, unique=True, verbose_name="Código/Nombre")
-    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
-    talla = models.CharField(max_length=10, verbose_name="Talla")
-    color = models.CharField(max_length=50, verbose_name="Color")
-    precio_venta = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Precio de Venta")
+
+# 4. Tipo de Zapato (Bota, Sandalia, Tacón, etc.)
+class TipoZapato(models.Model):
+    nombre = models.CharField(max_length=100, unique=True, verbose_name="Tipo de Zapato")
+
+    class Meta:
+        verbose_name = "Tipo de Zapato"
+        verbose_name_plural = "Tipos de Zapato"
 
     def __str__(self):
-        return f"{self.codigo} - {self.talla} - {self.color}"
+        return self.nombre
 
-# 4. Relación: Qué materiales gasta este zapato
+
+# 5. La Referencia (El Zapato)
+class Referencia(models.Model):
+    codigo = models.CharField(max_length=50, unique=True, verbose_name="Código/Nombre")
+    tipo_zapato = models.ForeignKey(TipoZapato, on_delete=models.PROTECT, related_name='referencias', verbose_name="Tipo de Zapato")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    imagen = models.ImageField(upload_to='referencias/', blank=True, null=True, verbose_name="Imagen")
+
+    def __str__(self):
+        return f"{self.codigo} - {self.tipo_zapato.nombre}"
+
+
+# 6. Relación: Qué materiales gasta este zapato
 class ConsumoMaterial(models.Model):
     referencia = models.ForeignKey(Referencia, on_delete=models.CASCADE, related_name='consumos')
-    material = models.ForeignKey(Material, on_delete=models.PROTECT) # PROTECT evita borrar un material si un zapato lo usa
+    material = models.ForeignKey(Material, on_delete=models.PROTECT)
     cantidad_consumida = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Cantidad Consumida")
+
+    class Meta:
+        unique_together = ['referencia', 'material']
 
     def __str__(self):
         return f"{self.referencia.codigo} consume {self.cantidad_consumida} de {self.material.nombre}"
 
-# 5. Relación: Qué procesos lleva este zapato y cuánto se paga por ellos
+
+# 7. Relación: Qué procesos lleva este zapato y cuánto se paga por ellos
 class ProcesoReferencia(models.Model):
     referencia = models.ForeignKey(Referencia, on_delete=models.CASCADE, related_name='procesos')
     proceso_base = models.ForeignKey(ProcesoBase, on_delete=models.PROTECT)

@@ -37,4 +37,7 @@ urlpatterns = [
     # ProcesoReferencia (hijo de referencia)
     path('referencias/<int:referencia_pk>/proceso/agregar/', views.proceso_ref_agregar, name='proceso_ref_agregar'),
     path('proceso-ref/<int:pk>/eliminar/', views.proceso_ref_eliminar, name='proceso_ref_eliminar'),
+
+    # API
+    path('api/materiales-por-tipo/<int:tipo_pk>/', views.api_materiales_por_tipo, name='api_materiales_por_tipo'),
 ]

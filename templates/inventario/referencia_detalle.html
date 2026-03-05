@@ -3,6 +3,33 @@
 {% block titulo %}{{ referencia.codigo }}{% endblock %}
 {% block page_title %}Detalle de Referencia{% endblock %}
 
+{% block extra_css %}
+<style>
+    .ref-image-card {
+        width: 200px;
+        height: 200px;
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1.5px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-body);
+        flex-shrink: 0;
+    }
+    .ref-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .consumo-tipo-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
 {% block contenido %}
 <div class="page-header">
     <h2>{{ referencia.codigo }}</h2>
@@ -12,14 +39,25 @@
     </div>
 </div>
 
-<div class="card border-0 mb-4" style="max-width:600px">
-    <div class="card-body p-0">
-        <table class="table detail-table mb-0">
-            <tr><th>Descripción</th><td>{{ referencia.descripcion|default:"—" }}</td></tr>
-            <tr><th>Talla</th><td>{{ referencia.talla }}</td></tr>
-            <tr><th>Color</th><td>{{ referencia.color }}</td></tr>
-            <tr><th>Precio Venta</th><td class="fw-semibold">${{ referencia.precio_venta }}</td></tr>
-        </table>
+<!-- Info básica -->
+<div class="card border-0 mb-4">
+    <div class="card-body">
+        <div class="d-flex gap-4 flex-wrap">
+            <div class="ref-image-card">
+                {% if referencia.imagen %}
+                    <img src="{{ referencia.imagen.url }}" alt="{{ referencia.codigo }}">
+                {% else %}
+                    <i class="bi bi-image text-muted" style="font-size:3rem"></i>
+                {% endif %}
+            </div>
+            <div class="flex-grow-1">
+                <table class="table detail-table mb-0">
+                    <tr><th style="width:160px">Código</th><td class="fw-semibold">{{ referencia.codigo }}</td></tr>
+                    <tr><th>Tipo de Zapato</th><td><span class="badge bg-primary bg-opacity-10 text-primary">{{ referencia.tipo_zapato.nombre }}</span></td></tr>
+                    <tr><th>Descripción</th><td>{{ referencia.descripcion|default:"—" }}</td></tr>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -28,21 +66,20 @@
     <div class="col-lg-6">
         <div class="card border-0 h-100">
             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-box-seam-fill me-1 text-muted"></i> Materiales</span>
-                <a href="{% url 'inventario:consumo_agregar' referencia.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar</a>
+                <span><i class="bi bi-box-seam-fill me-1 text-muted"></i> Materiales ({{ consumos|length }})</span>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead>
-                        <tr><th>Material</th><th>Cantidad</th><th>Unidad</th><th></th></tr>
+                        <tr><th>Material</th><th>Tipo</th><th>Cantidad</th><th>Unidad</th></tr>
                     </thead>
                     <tbody>
                         {% for c in consumos %}
                         <tr>
                             <td class="fw-semibold">{{ c.material.nombre }}</td>
+                            <td><span class="consumo-tipo-badge bg-light text-muted">{{ c.material.tipo.nombre }}</span></td>
                             <td>{{ c.cantidad_consumida }}</td>
                             <td><span class="text-muted">{{ c.material.unidad_medida }}</span></td>
-                            <td><a href="{% url 'inventario:consumo_eliminar' c.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a></td>
                         </tr>
                         {% empty %}
                         <tr><td colspan="4" class="text-center text-muted py-3">Sin materiales asignados.</td></tr>
@@ -57,23 +94,21 @@
     <div class="col-lg-6">
         <div class="card border-0 h-100">
             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-gear-fill me-1 text-muted"></i> Procesos</span>
-                <a href="{% url 'inventario:proceso_ref_agregar' referencia.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar</a>
+                <span><i class="bi bi-gear-fill me-1 text-muted"></i> Procesos ({{ procesos|length }})</span>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead>
-                        <tr><th>Proceso</th><th>Precio M.O.</th><th></th></tr>
+                        <tr><th>Proceso</th><th>Precio M.O.</th></tr>
                     </thead>
                     <tbody>
                         {% for p in procesos %}
                         <tr>
                             <td class="fw-semibold">{{ p.proceso_base.nombre }}</td>
                             <td>${{ p.precio_mano_obra }}</td>
-                            <td><a href="{% url 'inventario:proceso_ref_eliminar' p.pk %}" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></a></td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="3" class="text-center text-muted py-3">Sin procesos asignados.</td></tr>
+                        <tr><td colspan="2" class="text-center text-muted py-3">Sin procesos asignados.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

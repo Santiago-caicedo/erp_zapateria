@@ -5,25 +5,8 @@
 
 {% block contenido %}
 <div class="page-header">
-    <h2>Nómina</h2>
-</div>
-
-<div class="card border-0 mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-sm-4 col-lg-3">
-                <label class="form-label">Desde</label>
-                <input type="date" name="fecha_desde" value="{{ fecha_desde|default:'' }}" class="form-control" required>
-            </div>
-            <div class="col-sm-4 col-lg-3">
-                <label class="form-label">Hasta</label>
-                <input type="date" name="fecha_hasta" value="{{ fecha_hasta|default:'' }}" class="form-control" required>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Consultar</button>
-            </div>
-        </form>
-    </div>
+    <h2>Nómina - Pendientes de Pago</h2>
+    <a href="{% url 'produccion:nomina_historial' %}" class="btn btn-secondary"><i class="bi bi-clock-history me-1"></i>Historial</a>
 </div>
 
 {% if resultados %}
@@ -35,7 +18,7 @@
                     <tr>
                         <th>Empleado</th>
                         <th>Total Pares</th>
-                        <th>Total Pago</th>
+                        <th>Total Pendiente</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -46,7 +29,7 @@
                         <td>{{ r.total_pares }}</td>
                         <td class="fw-bold text-success">${{ r.total_pago }}</td>
                         <td>
-                            <a href="{% url 'produccion:nomina_detalle' r.empleado__id %}?fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}" class="btn btn-sm btn-primary"><i class="bi bi-eye me-1"></i>Detalle</a>
+                            <a href="{% url 'produccion:nomina_detalle' r.empleado__id %}" class="btn btn-sm btn-primary"><i class="bi bi-eye me-1"></i>Ver Detalle</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -55,11 +38,11 @@
         </div>
     </div>
 </div>
-{% elif fecha_desde %}
+{% else %}
 <div class="card border-0">
     <div class="card-body text-center py-5">
-        <i class="bi bi-inbox text-muted" style="font-size:2.5rem"></i>
-        <p class="text-muted mt-2">No se encontraron registros en este rango de fechas.</p>
+        <i class="bi bi-check-circle text-muted" style="font-size:2.5rem"></i>
+        <p class="text-muted mt-2">No hay registros pendientes de pago.</p>
     </div>
 </div>
 {% endif %}

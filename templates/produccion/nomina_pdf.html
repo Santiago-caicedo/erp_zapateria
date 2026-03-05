@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: letter;
+            margin: 2cm 1.5cm;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #1a1f36;
+            line-height: 1.4;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4f6ef7;
+            padding-bottom: 12px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            color: #4f6ef7;
+        }
+        .header p {
+            margin: 4px 0 0;
+            color: #6b7394;
+            font-size: 10px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        .info-row .label {
+            color: #6b7394;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-row .value {
+            font-weight: bold;
+        }
+        .orden-header {
+            background: #f4f6fb;
+            padding: 6px 10px;
+            margin-top: 15px;
+            margin-bottom: 0;
+            font-weight: bold;
+            font-size: 11px;
+            border-left: 3px solid #4f6ef7;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        th {
+            background: #f4f6fb;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b7394;
+            font-weight: 700;
+            padding: 6px 8px;
+            border-bottom: 1px solid #e2e6ef;
+            text-align: left;
+        }
+        td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #f0f2f8;
+            font-size: 10px;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .subtotal-row {
+            background: #f9fafb;
+        }
+        .subtotal-row td {
+            font-weight: bold;
+            border-top: 1px solid #e2e6ef;
+        }
+        .total-box {
+            margin-top: 20px;
+            padding: 12px 15px;
+            background: #f4f6fb;
+            border: 2px solid #4f6ef7;
+            border-radius: 6px;
+            text-align: right;
+        }
+        .total-box .total-label {
+            font-size: 12px;
+            color: #6b7394;
+        }
+        .total-box .total-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4f6ef7;
+        }
+        .total-box .total-pares {
+            font-size: 10px;
+            color: #6b7394;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e6ef;
+            font-size: 9px;
+            color: #6b7394;
+            text-align: center;
+        }
+        .firma {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .firma-linea {
+            width: 200px;
+            text-align: center;
+        }
+        .firma-linea .linea {
+            border-top: 1px solid #1a1f36;
+            margin-bottom: 4px;
+        }
+        .firma-linea span {
+            font-size: 9px;
+            color: #6b7394;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ERP Zapatería</h1>
+        <p>Comprobante de Nómina</p>
+    </div>
+
+    <table style="margin-bottom: 15px;">
+        <tr>
+            <td style="border: none; padding: 2px 8px;">
+                <span style="color: #6b7394; font-size: 9px; text-transform: uppercase;">Empleado</span><br>
+                <strong>{{ empleado.nombre }}</strong>
+            </td>
+            <td style="border: none; padding: 2px 8px;">
+                <span style="color: #6b7394; font-size: 9px; text-transform: uppercase;">Documento</span><br>
+                <strong>{{ empleado.documento }}</strong>
+            </td>
+            <td style="border: none; padding: 2px 8px; text-align: right;">
+                <span style="color: #6b7394; font-size: 9px; text-transform: uppercase;">Fecha</span><br>
+                <strong>{{ fecha_generacion }}</strong>
+            </td>
+        </tr>
+    </table>
+
+    {% for grupo in ordenes_agrupadas %}
+    <div class="orden-header">
+        Orden #{{ grupo.orden.numero }} &mdash; {{ grupo.orden.referencia.codigo }} ({{ grupo.orden.cliente.nombre }})
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Proceso</th>
+                <th class="text-right">Cantidad</th>
+                <th class="text-right">Precio Unit.</th>
+                <th class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in grupo.registros %}
+            <tr>
+                <td>{{ r.fecha }}</td>
+                <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
+                <td class="text-right">{{ r.cantidad_realizada }}</td>
+                <td class="text-right">${{ r.proceso_referencia.precio_mano_obra }}</td>
+                <td class="text-right">${{ r.total_pago }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="subtotal-row">
+                <td colspan="2">Subtotal Orden #{{ grupo.orden.numero }}</td>
+                <td class="text-right">{{ grupo.pares }}</td>
+                <td></td>
+                <td class="text-right">${{ grupo.subtotal }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endfor %}
+
+    <div class="total-box">
+        <div class="total-pares">{{ total_pares }} pares en total</div>
+        <div class="total-label">TOTAL A PAGAR</div>
+        <div class="total-value">${{ total_general }}</div>
+    </div>
+
+    <div class="firma">
+        <div class="firma-linea">
+            <div class="linea"></div>
+            <span>Firma Empleado</span>
+        </div>
+        <div class="firma-linea">
+            <div class="linea"></div>
+            <span>Firma Empresa</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        Documento generado el {{ fecha_generacion }} &mdash; ERP Zapatería
+    </div>
+</body>
+</html>

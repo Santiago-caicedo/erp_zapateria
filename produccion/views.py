@@ -1,9 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Sum, F
-from .models import Cliente, OrdenProduccion, DetalleOrden, RegistroTrabajo
-from .forms import ClienteForm, OrdenProduccionForm, DetalleOrdenForm, RegistroTrabajoForm
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
+from django.utils import timezone
+from weasyprint import HTML
+from .models import Cliente, OrdenProduccion, RegistroTrabajo
+from .forms import ClienteForm, OrdenProduccionForm, OrdenEditarForm, RegistroTrabajoForm
 from empleados.models import Empleado
+from inventario.models import Referencia
 
 
 # ─── Cliente ───
@@ -50,7 +55,12 @@ def cliente_eliminar(request, pk):
 # ─── OrdenProduccion ───
 
 def orden_lista(request):
-    ordenes = OrdenProduccion.objects.select_related('cliente').all().order_by('-fecha_creacion')
+    ordenes = (
+        OrdenProduccion.objects
+        .select_related('cliente', 'referencia__tipo_zapato')
+        .all()
+        .order_by('-numero')
+    )
     return render(request, 'produccion/orden_lista.html', {'ordenes': ordenes})
 
 
@@ -63,26 +73,60 @@ def orden_crear(request):
             return redirect('produccion:orden_lista')
     else:
         form = OrdenProduccionForm()
-    return render(request, 'produccion/orden_form.html', {'form': form, 'titulo': 'Crear Orden de Producción'})
+    return render(request, 'produccion/orden_form.html', {
+        'form': form, 'titulo': 'Crear Orden de Producción',
+    })
 
 
 def orden_detalle(request, pk):
-    orden = get_object_or_404(OrdenProduccion, pk=pk)
-    detalles = orden.detalles.select_related('referencia').all()
-    return render(request, 'produccion/orden_detalle.html', {'orden': orden, 'detalles': detalles})
+    orden = get_object_or_404(
+        OrdenProduccion.objects.select_related('cliente', 'referencia__tipo_zapato'),
+        pk=pk,
+    )
+    consumos = orden.referencia.consumos.select_related('material__tipo').all()
+    procesos = orden.referencia.procesos.select_related('proceso_base').all()
+    registros = orden.registros_trabajo.select_related(
+        'empleado', 'proceso_referencia__proceso_base'
+    ).order_by('-fecha')
+
+    # Calcular material necesario por la cantidad total
+    materiales_necesarios = []
+    for c in consumos:
+        materiales_necesarios.append({
+            'material': c.material,
+            'cantidad_unitaria': c.cantidad_consumida,
+            'cantidad_total': c.cantidad_consumida * orden.cantidad_total,
+        })
+
+    tallas = []
+    for t in range(34, 41):
+        val = getattr(orden, f'talla_{t}')
+        if val > 0:
+            tallas.append({'numero': t, 'cantidad': val})
+
+    return render(request, 'produccion/orden_detalle.html', {
+        'orden': orden,
+        'consumos': consumos,
+        'materiales_necesarios': materiales_necesarios,
+        'procesos': procesos,
+        'registros': registros,
+        'tallas': tallas,
+    })
 
 
 def orden_editar(request, pk):
     orden = get_object_or_404(OrdenProduccion, pk=pk)
     if request.method == 'POST':
-        form = OrdenProduccionForm(request.POST, instance=orden)
+        form = OrdenEditarForm(request.POST, instance=orden)
         if form.is_valid():
             form.save()
             messages.success(request, 'Orden actualizada exitosamente.')
             return redirect('produccion:orden_detalle', pk=orden.pk)
     else:
-        form = OrdenProduccionForm(instance=orden)
-    return render(request, 'produccion/orden_form.html', {'form': form, 'titulo': 'Editar Orden'})
+        form = OrdenEditarForm(instance=orden)
+    return render(request, 'produccion/orden_form.html', {
+        'form': form, 'titulo': f'Editar Orden #{orden.numero}',
+    })
 
 
 def orden_eliminar(request, pk):
@@ -94,63 +138,35 @@ def orden_eliminar(request, pk):
     return render(request, 'produccion/orden_confirmar_eliminar.html', {'orden': orden})
 
 
-# ─── DetalleOrden (hijo de orden) ───
-
-def detalle_agregar(request, orden_pk):
-    orden = get_object_or_404(OrdenProduccion, pk=orden_pk)
-    if request.method == 'POST':
-        form = DetalleOrdenForm(request.POST)
-        if form.is_valid():
-            detalle = form.save(commit=False)
-            detalle.orden = orden
-            detalle.save()
-            messages.success(request, 'Referencia agregada a la orden.')
-            return redirect('produccion:orden_detalle', pk=orden.pk)
-    else:
-        form = DetalleOrdenForm()
-    return render(request, 'produccion/detalle_form.html', {
-        'form': form,
-        'orden': orden,
-        'titulo': f'Agregar Referencia a Orden #{orden.pk}',
-    })
-
-
-def detalle_eliminar(request, pk):
-    detalle = get_object_or_404(DetalleOrden, pk=pk)
-    orden_pk = detalle.orden.pk
-    if request.method == 'POST':
-        detalle.delete()
-        messages.success(request, 'Referencia removida de la orden.')
-        return redirect('produccion:orden_detalle', pk=orden_pk)
-    return render(request, 'produccion/detalle_confirmar_eliminar.html', {'detalle': detalle})
-
-
 # ─── RegistroTrabajo ───
 
-def registro_agregar(request, detalle_pk):
-    detalle = get_object_or_404(DetalleOrden.objects.select_related('referencia', 'orden'), pk=detalle_pk)
+def registro_agregar(request, orden_pk):
+    orden = get_object_or_404(
+        OrdenProduccion.objects.select_related('referencia'),
+        pk=orden_pk,
+    )
     if request.method == 'POST':
         form = RegistroTrabajoForm(request.POST)
         if form.is_valid():
             registro = form.save(commit=False)
-            registro.detalle_orden = detalle
+            registro.orden = orden
+            registro.cantidad_realizada = orden.cantidad_total
             registro.save()
             messages.success(request, 'Registro de trabajo guardado.')
-            return redirect('produccion:orden_detalle', pk=detalle.orden.pk)
+            return redirect('produccion:orden_detalle', pk=orden.pk)
     else:
         form = RegistroTrabajoForm()
-        # Filtrar solo los procesos que corresponden a la referencia del detalle
-        form.fields['proceso_referencia'].queryset = detalle.referencia.procesos.select_related('proceso_base')
+        form.fields['proceso_referencia'].queryset = orden.referencia.procesos.select_related('proceso_base')
     return render(request, 'produccion/registro_form.html', {
         'form': form,
-        'detalle': detalle,
-        'titulo': f'Registrar Trabajo - {detalle.referencia.codigo} (Orden #{detalle.orden.pk})',
+        'orden': orden,
+        'titulo': f'Registrar Trabajo - {orden.referencia.codigo} (Orden #{orden.numero})',
     })
 
 
 def registro_eliminar(request, pk):
     registro = get_object_or_404(RegistroTrabajo, pk=pk)
-    orden_pk = registro.detalle_orden.orden.pk
+    orden_pk = registro.orden.pk
     if request.method == 'POST':
         registro.delete()
         messages.success(request, 'Registro de trabajo eliminado.')
@@ -158,49 +174,177 @@ def registro_eliminar(request, pk):
     return render(request, 'produccion/registro_confirmar_eliminar.html', {'registro': registro})
 
 
+# ─── API ───
+
+def api_referencia_detalle(request, pk):
+    """Retorna datos de una referencia para el formulario de orden."""
+    ref = get_object_or_404(
+        Referencia.objects.select_related('tipo_zapato'),
+        pk=pk,
+    )
+    consumos = [
+        {
+            'material': c.material.nombre,
+            'tipo': c.material.tipo.nombre,
+            'cantidad': str(c.cantidad_consumida),
+            'unidad': c.material.unidad_medida,
+        }
+        for c in ref.consumos.select_related('material__tipo').all()
+    ]
+    procesos = [
+        {
+            'nombre': p.proceso_base.nombre,
+            'precio': str(p.precio_mano_obra),
+        }
+        for p in ref.procesos.select_related('proceso_base').all()
+    ]
+    data = {
+        'codigo': ref.codigo,
+        'tipo_zapato': ref.tipo_zapato.nombre,
+        'descripcion': ref.descripcion or '',
+        'imagen': ref.imagen.url if ref.imagen else '',
+        'consumos': consumos,
+        'procesos': procesos,
+    }
+    return JsonResponse(data)
+
+
 # ─── Nómina ───
 
 def nomina(request):
-    fecha_desde = request.GET.get('fecha_desde')
-    fecha_hasta = request.GET.get('fecha_hasta')
-    resultados = []
-
-    if fecha_desde and fecha_hasta:
-        resultados = (
-            RegistroTrabajo.objects
-            .filter(fecha__range=[fecha_desde, fecha_hasta])
-            .values('empleado__id', 'empleado__nombre')
-            .annotate(
-                total_pares=Sum('cantidad_realizada'),
-                total_pago=Sum(F('cantidad_realizada') * F('proceso_referencia__precio_mano_obra')),
-            )
-            .order_by('empleado__nombre')
+    """Lista de empleados con registros de trabajo pendientes de pago."""
+    resultados = (
+        RegistroTrabajo.objects
+        .filter(pagado=False)
+        .values('empleado__id', 'empleado__nombre')
+        .annotate(
+            total_pares=Sum('cantidad_realizada'),
+            total_pago=Sum(F('cantidad_realizada') * F('proceso_referencia__precio_mano_obra')),
         )
-
+        .order_by('empleado__nombre')
+    )
     return render(request, 'produccion/nomina.html', {
         'resultados': resultados,
-        'fecha_desde': fecha_desde,
-        'fecha_hasta': fecha_hasta,
     })
 
 
-def nomina_detalle_empleado(request, empleado_pk):
+def nomina_detalle(request, empleado_pk):
+    """Detalle de registros pendientes de pago de un empleado, agrupados por orden."""
     empleado = get_object_or_404(Empleado, pk=empleado_pk)
-    fecha_desde = request.GET.get('fecha_desde')
-    fecha_hasta = request.GET.get('fecha_hasta')
-    registros = []
+    registros = (
+        RegistroTrabajo.objects
+        .filter(empleado=empleado, pagado=False)
+        .select_related('orden__referencia', 'proceso_referencia__proceso_base')
+        .order_by('orden__numero', 'fecha')
+    )
 
-    if fecha_desde and fecha_hasta:
-        registros = (
-            RegistroTrabajo.objects
-            .filter(empleado=empleado, fecha__range=[fecha_desde, fecha_hasta])
-            .select_related('detalle_orden__orden', 'detalle_orden__referencia', 'proceso_referencia__proceso_base')
-            .order_by('-fecha')
-        )
+    # Agrupar por orden
+    ordenes_dict = {}
+    total_general = 0
+    total_pares = 0
+    for r in registros:
+        orden = r.orden
+        if orden.pk not in ordenes_dict:
+            ordenes_dict[orden.pk] = {
+                'orden': orden,
+                'registros': [],
+                'subtotal': 0,
+                'pares': 0,
+            }
+        pago = r.cantidad_realizada * r.proceso_referencia.precio_mano_obra
+        ordenes_dict[orden.pk]['registros'].append(r)
+        ordenes_dict[orden.pk]['subtotal'] += pago
+        ordenes_dict[orden.pk]['pares'] += r.cantidad_realizada
+        total_general += pago
+        total_pares += r.cantidad_realizada
+
+    ordenes_agrupadas = list(ordenes_dict.values())
 
     return render(request, 'produccion/nomina_detalle.html', {
         'empleado': empleado,
+        'ordenes_agrupadas': ordenes_agrupadas,
+        'total_general': total_general,
+        'total_pares': total_pares,
+    })
+
+
+def nomina_pdf(request, empleado_pk):
+    """Genera un PDF con los registros pendientes de pago del empleado."""
+    empleado = get_object_or_404(Empleado, pk=empleado_pk)
+    registros = (
+        RegistroTrabajo.objects
+        .filter(empleado=empleado, pagado=False)
+        .select_related('orden__referencia', 'proceso_referencia__proceso_base')
+        .order_by('orden__numero', 'fecha')
+    )
+
+    # Agrupar por orden
+    ordenes_dict = {}
+    total_general = 0
+    total_pares = 0
+    for r in registros:
+        orden = r.orden
+        if orden.pk not in ordenes_dict:
+            ordenes_dict[orden.pk] = {
+                'orden': orden,
+                'registros': [],
+                'subtotal': 0,
+                'pares': 0,
+            }
+        pago = r.cantidad_realizada * r.proceso_referencia.precio_mano_obra
+        ordenes_dict[orden.pk]['registros'].append(r)
+        ordenes_dict[orden.pk]['subtotal'] += pago
+        ordenes_dict[orden.pk]['pares'] += r.cantidad_realizada
+        total_general += pago
+        total_pares += r.cantidad_realizada
+
+    ordenes_agrupadas = list(ordenes_dict.values())
+    fecha_generacion = timezone.localdate()
+
+    html_string = render_to_string('produccion/nomina_pdf.html', {
+        'empleado': empleado,
+        'ordenes_agrupadas': ordenes_agrupadas,
+        'total_general': total_general,
+        'total_pares': total_pares,
+        'fecha_generacion': fecha_generacion,
+    })
+
+    pdf = HTML(string=html_string).write_pdf()
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="nomina_{empleado.nombre}_{fecha_generacion}.pdf"'
+    return response
+
+
+def nomina_marcar_pagado(request, empleado_pk):
+    """Marca todos los registros pendientes del empleado como pagados."""
+    empleado = get_object_or_404(Empleado, pk=empleado_pk)
+    if request.method == 'POST':
+        cantidad = (
+            RegistroTrabajo.objects
+            .filter(empleado=empleado, pagado=False)
+            .update(pagado=True, fecha_pago=timezone.localdate())
+        )
+        messages.success(request, f'Se marcaron {cantidad} registros como pagados para {empleado.nombre}.')
+        return redirect('produccion:nomina')
+    return redirect('produccion:nomina_detalle', empleado_pk=empleado.pk)
+
+
+def nomina_historial(request):
+    """Historial de registros ya pagados."""
+    empleado_pk = request.GET.get('empleado')
+    empleados = Empleado.objects.all().order_by('nombre')
+    registros = []
+
+    if empleado_pk:
+        registros = (
+            RegistroTrabajo.objects
+            .filter(pagado=True, empleado_id=empleado_pk)
+            .select_related('orden__referencia', 'proceso_referencia__proceso_base', 'empleado')
+            .order_by('-fecha_pago', '-fecha')
+        )
+
+    return render(request, 'produccion/nomina_historial.html', {
+        'empleados': empleados,
         'registros': registros,
-        'fecha_desde': fecha_desde,
-        'fecha_hasta': fecha_hasta,
+        'empleado_seleccionado': empleado_pk,
     })

@@ -2,7 +2,8 @@ from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import F
-from .models import TipoMaterial, Material, ProcesoBase, Referencia, ConsumoMaterial, ProcesoReferencia
+from django.http import JsonResponse
+from .models import TipoMaterial, Material, ProcesoBase, TipoZapato, Referencia, ConsumoMaterial, ProcesoReferencia
 from .forms import (
     TipoMaterialForm, MaterialForm, ProcesoBaseForm, ReferenciaForm,
     ConsumoMaterialForm, ProcesoReferenciaForm,
@@ -167,13 +168,13 @@ def proceso_eliminar(request, pk):
 # ─── Referencia ───
 
 def referencia_lista(request):
-    referencias = Referencia.objects.all().order_by('codigo')
+    referencias = Referencia.objects.select_related('tipo_zapato').all().order_by('codigo')
     return render(request, 'inventario/referencia_lista.html', {'referencias': referencias})
 
 
 def referencia_crear(request):
     if request.method == 'POST':
-        form = ReferenciaConProcesosForm(request.POST)
+        form = ReferenciaConProcesosForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Referencia creada exitosamente.')
@@ -181,14 +182,16 @@ def referencia_crear(request):
     else:
         form = ReferenciaConProcesosForm()
     procesos = ProcesoBase.objects.all().order_by('nombre')
+    tipos_material = TipoMaterial.objects.prefetch_related('materiales').all().order_by('nombre')
     return render(request, 'inventario/referencia_form.html', {
-        'form': form, 'titulo': 'Crear Referencia', 'procesos': procesos,
+        'form': form, 'titulo': 'Crear Referencia',
+        'procesos': procesos, 'tipos_material': tipos_material,
     })
 
 
 def referencia_detalle(request, pk):
-    referencia = get_object_or_404(Referencia, pk=pk)
-    consumos = referencia.consumos.select_related('material').all()
+    referencia = get_object_or_404(Referencia.objects.select_related('tipo_zapato'), pk=pk)
+    consumos = referencia.consumos.select_related('material__tipo').all()
     procesos = referencia.procesos.select_related('proceso_base').all()
     return render(request, 'inventario/referencia_detalle.html', {
         'referencia': referencia,
@@ -200,7 +203,7 @@ def referencia_detalle(request, pk):
 def referencia_editar(request, pk):
     referencia = get_object_or_404(Referencia, pk=pk)
     if request.method == 'POST':
-        form = ReferenciaConProcesosForm(request.POST, instance=referencia)
+        form = ReferenciaConProcesosForm(request.POST, request.FILES, instance=referencia)
         if form.is_valid():
             form.save()
             messages.success(request, 'Referencia actualizada exitosamente.')
@@ -208,9 +211,20 @@ def referencia_editar(request, pk):
     else:
         form = ReferenciaConProcesosForm(instance=referencia)
     procesos = ProcesoBase.objects.all().order_by('nombre')
+    tipos_material = TipoMaterial.objects.prefetch_related('materiales').all().order_by('nombre')
     return render(request, 'inventario/referencia_form.html', {
-        'form': form, 'titulo': 'Editar Referencia', 'procesos': procesos,
+        'form': form, 'titulo': 'Editar Referencia',
+        'procesos': procesos, 'tipos_material': tipos_material,
     })
+
+
+# ─── API ───
+
+def api_materiales_por_tipo(request, tipo_pk):
+    materiales = Material.objects.filter(tipo_id=tipo_pk).order_by('nombre').values(
+        'id', 'nombre', 'unidad_medida'
+    )
+    return JsonResponse(list(materiales), safe=False)
 
 
 def referencia_eliminar(request, pk):

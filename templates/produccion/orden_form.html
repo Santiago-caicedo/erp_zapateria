@@ -3,35 +3,302 @@
 {% block titulo %}{{ titulo }}{% endblock %}
 {% block page_title %}{{ titulo }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .tallas-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+    }
+    .talla-cell {
+        text-align: center;
+    }
+    .talla-cell label {
+        display: block;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        color: var(--text-secondary);
+    }
+    .talla-cell input {
+        text-align: center;
+        font-weight: 600;
+    }
+    .total-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--accent-soft);
+        color: var(--accent);
+        padding: 0.6rem 1.25rem;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    .total-badge .total-number {
+        font-size: 1.4rem;
+    }
+    .ref-preview {
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem;
+        background: var(--bg-body);
+        display: none;
+    }
+    .ref-preview.show { display: block; }
+    .ref-preview-img {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-sm);
+        object-fit: cover;
+        border: 1.5px solid var(--border);
+    }
+    .ref-preview-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-sm);
+        background: var(--bg-card);
+        border: 1.5px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .mat-list { margin: 0; padding: 0; list-style: none; }
+    .mat-list li {
+        padding: 0.3rem 0;
+        font-size: 0.8rem;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+    }
+    .mat-list li:last-child { border-bottom: none; }
+    .section-divider {
+        border: none;
+        border-top: 1.5px solid var(--border);
+        margin: 1.5rem 0;
+    }
+    .section-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+    .section-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 576px) {
+        .tallas-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+</style>
+{% endblock %}
+
 {% block contenido %}
-<div class="form-card mx-auto">
+<div class="form-card mx-auto" style="max-width:780px">
     <div class="form-card-header">
         <h2>{{ titulo }}</h2>
-        <p>Define el cliente, fecha de entrega y estado de la orden.</p>
+        <p>Selecciona el cliente, la referencia y las cantidades por talla.</p>
     </div>
     <div class="form-card-body">
         <form method="post">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="id_cliente">Cliente</label>
-                {{ form.cliente }}
-                {% if form.cliente.errors %}<div class="invalid-feedback d-block">{{ form.cliente.errors.0 }}</div>{% endif %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+                {% endfor %}
             </div>
-            <div class="form-group">
-                <label for="id_fecha_entrega">Fecha de Entrega</label>
-                {{ form.fecha_entrega }}
-                {% if form.fecha_entrega.errors %}<div class="invalid-feedback d-block">{{ form.fecha_entrega.errors.0 }}</div>{% endif %}
+            {% endif %}
+
+            <!-- Datos básicos -->
+            <div class="section-title"><i class="bi bi-clipboard-fill me-1"></i>Datos de la Orden</div>
+            <div class="section-subtitle">Cliente y fecha de entrega.</div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label for="id_cliente">Cliente</label>
+                        {{ form.cliente }}
+                        {% if form.cliente.errors %}<div class="invalid-feedback d-block">{{ form.cliente.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-0">
+                        <label for="id_fecha_entrega">Fecha de Entrega</label>
+                        {{ form.fecha_entrega }}
+                        {% if form.fecha_entrega.errors %}<div class="invalid-feedback d-block">{{ form.fecha_entrega.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
             </div>
+
+            {% if form.estado %}
             <div class="form-group">
                 <label for="id_estado">Estado</label>
                 {{ form.estado }}
-                {% if form.estado.errors %}<div class="invalid-feedback d-block">{{ form.estado.errors.0 }}</div>{% endif %}
             </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+            {% endif %}
+
+            <!-- Referencia -->
+            <hr class="section-divider">
+            <div class="section-title"><i class="bi bi-tag-fill me-1"></i>Referencia</div>
+            <div class="section-subtitle">Selecciona la referencia del zapato a producir.</div>
+
+            <div class="form-group">
+                <label for="id_referencia">Referencia</label>
+                {{ form.referencia }}
+                {% if form.referencia.errors %}<div class="invalid-feedback d-block">{{ form.referencia.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- Preview de referencia -->
+            <div class="ref-preview mb-3" id="refPreview">
+                <div class="d-flex gap-3 align-items-start">
+                    <div id="refImgContainer">
+                        <div class="ref-preview-placeholder"><i class="bi bi-image text-muted"></i></div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <strong id="refCodigo"></strong>
+                            <span class="badge bg-primary bg-opacity-10 text-primary" id="refTipo"></span>
+                        </div>
+                        <p class="text-muted small mb-2" id="refDescripcion"></p>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <small class="fw-bold text-muted">Materiales:</small>
+                                <ul class="mat-list" id="refMateriales"></ul>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="fw-bold text-muted">Procesos:</small>
+                                <ul class="mat-list" id="refProcesos"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tallas -->
+            <hr class="section-divider">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <div class="section-title mb-0"><i class="bi bi-rulers me-1"></i>Tallas</div>
+                    <div class="section-subtitle mb-0">Indica la cantidad de pares por talla.</div>
+                </div>
+                <div class="total-badge">
+                    Total: <span class="total-number" id="totalPares">0</span> pares
+                </div>
+            </div>
+
+            <div class="tallas-grid mt-3 mb-3">
+                <div class="talla-cell">
+                    <label>34</label>
+                    {{ form.talla_34 }}
+                </div>
+                <div class="talla-cell">
+                    <label>35</label>
+                    {{ form.talla_35 }}
+                </div>
+                <div class="talla-cell">
+                    <label>36</label>
+                    {{ form.talla_36 }}
+                </div>
+                <div class="talla-cell">
+                    <label>37</label>
+                    {{ form.talla_37 }}
+                </div>
+                <div class="talla-cell">
+                    <label>38</label>
+                    {{ form.talla_38 }}
+                </div>
+                <div class="talla-cell">
+                    <label>39</label>
+                    {{ form.talla_39 }}
+                </div>
+                <div class="talla-cell">
+                    <label>40</label>
+                    {{ form.talla_40 }}
+                </div>
+            </div>
+
+            <div class="form-actions mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar Orden</button>
                 <a href="{% url 'produccion:orden_lista' %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calcular total de pares en tiempo real
+function calcularTotal() {
+    let total = 0;
+    document.querySelectorAll('.talla-input').forEach(input => {
+        total += parseInt(input.value) || 0;
+    });
+    document.getElementById('totalPares').textContent = total;
+}
+
+document.querySelectorAll('.talla-input').forEach(input => {
+    input.addEventListener('input', calcularTotal);
+});
+calcularTotal();
+
+// Preview de referencia al seleccionar
+const refSelect = document.getElementById('id_referencia');
+if (refSelect) {
+    refSelect.addEventListener('change', function() {
+        const refId = this.value;
+        const preview = document.getElementById('refPreview');
+        if (!refId) {
+            preview.classList.remove('show');
+            return;
+        }
+        fetch('/produccion/api/referencia/' + refId + '/')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('refCodigo').textContent = data.codigo;
+                document.getElementById('refTipo').textContent = data.tipo_zapato;
+                document.getElementById('refDescripcion').textContent = data.descripcion || 'Sin descripción';
+
+                const imgContainer = document.getElementById('refImgContainer');
+                if (data.imagen) {
+                    imgContainer.innerHTML = '<img src="' + data.imagen + '" class="ref-preview-img" alt="' + data.codigo + '">';
+                } else {
+                    imgContainer.innerHTML = '<div class="ref-preview-placeholder"><i class="bi bi-image text-muted"></i></div>';
+                }
+
+                const matList = document.getElementById('refMateriales');
+                matList.innerHTML = '';
+                data.consumos.forEach(c => {
+                    const li = document.createElement('li');
+                    li.innerHTML = '<span>' + c.material + ' <small class="text-muted">(' + c.tipo + ')</small></span><span class="fw-semibold">' + c.cantidad + ' ' + c.unidad + '</span>';
+                    matList.appendChild(li);
+                });
+                if (data.consumos.length === 0) {
+                    matList.innerHTML = '<li class="text-muted">Sin materiales</li>';
+                }
+
+                const procList = document.getElementById('refProcesos');
+                procList.innerHTML = '';
+                data.procesos.forEach(p => {
+                    const li = document.createElement('li');
+                    li.innerHTML = '<span>' + p.nombre + '</span><span class="fw-semibold">$' + p.precio + '</span>';
+                    procList.appendChild(li);
+                });
+                if (data.procesos.length === 0) {
+                    procList.innerHTML = '<li class="text-muted">Sin procesos</li>';
+                }
+
+                preview.classList.add('show');
+            });
+    });
+
+    // Trigger on page load if editing
+    if (refSelect.value) {
+        refSelect.dispatchEvent(new Event('change'));
+    }
+}
+</script>
 {% endblock %}
