@@ -5,197 +5,188 @@
     <style>
         @page {
             size: letter;
-            margin: 2cm 1.5cm;
+            margin: 1cm 1cm;
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 11px;
+            font-size: 9px;
             color: #1a1f36;
-            line-height: 1.4;
+            line-height: 1.2;
+            margin: 0;
         }
         .header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #4f6ef7;
-            padding-bottom: 12px;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 18px;
-            color: #4f6ef7;
-        }
-        .header p {
-            margin: 4px 0 0;
-            color: #6b7394;
-            font-size: 10px;
-        }
-        .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 11px;
+            align-items: center;
+            border-bottom: 1.5px solid #4f6ef7;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
         }
-        .info-row .label {
+        .header-left h1 {
+            margin: 0;
+            font-size: 13px;
+            color: #4f6ef7;
+        }
+        .header-left span {
+            font-size: 8px;
             color: #6b7394;
+        }
+        .header-right {
+            text-align: right;
+            font-size: 8px;
+            color: #6b7394;
+        }
+        .header-right strong {
+            color: #1a1f36;
             font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        .info-row .value {
-            font-weight: bold;
-        }
-        .orden-header {
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
             background: #f4f6fb;
-            padding: 6px 10px;
-            margin-top: 15px;
-            margin-bottom: 0;
-            font-weight: bold;
-            font-size: 11px;
-            border-left: 3px solid #4f6ef7;
+            padding: 4px 8px;
+            margin-bottom: 8px;
+            font-size: 9px;
         }
+        .info-bar strong { color: #1a1f36; }
+        .info-bar span { color: #6b7394; font-size: 8px; text-transform: uppercase; }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 2px;
         }
         th {
             background: #f4f6fb;
-            font-size: 9px;
+            font-size: 7px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             color: #6b7394;
             font-weight: 700;
-            padding: 6px 8px;
-            border-bottom: 1px solid #e2e6ef;
+            padding: 3px 5px;
+            border-bottom: 1px solid #dde1ec;
             text-align: left;
         }
         td {
-            padding: 5px 8px;
+            padding: 2px 5px;
             border-bottom: 1px solid #f0f2f8;
-            font-size: 10px;
+            font-size: 8px;
         }
-        .text-right {
-            text-align: right;
+        .text-right { text-align: right; }
+        .orden-row {
+            background: #f8f9fc;
         }
-        .subtotal-row {
-            background: #f9fafb;
+        .orden-row td {
+            font-weight: 700;
+            font-size: 8px;
+            color: #4f6ef7;
+            border-bottom: 1px solid #dde1ec;
+            padding: 3px 5px;
         }
         .subtotal-row td {
-            font-weight: bold;
-            border-top: 1px solid #e2e6ef;
+            font-weight: 700;
+            font-size: 8px;
+            border-top: 1px solid #dde1ec;
+            border-bottom: 1.5px solid #dde1ec;
+            padding: 3px 5px;
         }
-        .total-box {
-            margin-top: 20px;
-            padding: 12px 15px;
-            background: #f4f6fb;
-            border: 2px solid #4f6ef7;
-            border-radius: 6px;
-            text-align: right;
-        }
-        .total-box .total-label {
-            font-size: 12px;
-            color: #6b7394;
-        }
-        .total-box .total-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #4f6ef7;
-        }
-        .total-box .total-pares {
-            font-size: 10px;
-            color: #6b7394;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 10px;
-            border-top: 1px solid #e2e6ef;
-            font-size: 9px;
-            color: #6b7394;
-            text-align: center;
-        }
-        .firma {
-            margin-top: 50px;
+        .total-bar {
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: #4f6ef7;
+            color: #fff;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+        }
+        .total-bar .label { font-size: 9px; }
+        .total-bar .value { font-size: 14px; font-weight: 700; }
+        .total-bar .pares { font-size: 8px; opacity: 0.8; }
+        .firma-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-around;
         }
         .firma-linea {
-            width: 200px;
+            width: 160px;
             text-align: center;
         }
         .firma-linea .linea {
             border-top: 1px solid #1a1f36;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .firma-linea span {
-            font-size: 9px;
+            font-size: 7px;
             color: #6b7394;
+        }
+        .footer {
+            margin-top: 8px;
+            font-size: 7px;
+            color: #6b7394;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>ERP Zapatería</h1>
-        <p>Comprobante de Nómina</p>
+        <div class="header-left">
+            <h1>Comprobante de Nómina</h1>
+            <span>ERP Zapatería</span>
+        </div>
+        <div class="header-right">
+            <span>Fecha</span><br>
+            <strong>{{ fecha_generacion }}</strong>
+        </div>
     </div>
 
-    <table style="margin-bottom: 15px;">
-        <tr>
-            <td style="border: none; padding: 2px 8px;">
-                <span style="color: #6b7394; font-size: 9px; text-transform: uppercase;">Empleado</span><br>
-                <strong>{{ empleado.nombre }}</strong>
-            </td>
-            <td style="border: none; padding: 2px 8px;">
-                <span style="color: #6b7394; font-size: 9px; text-transform: uppercase;">Documento</span><br>
-                <strong>{{ empleado.documento }}</strong>
-            </td>
-            <td style="border: none; padding: 2px 8px; text-align: right;">
-                <span style="color: #6b7394; font-size: 9px; text-transform: uppercase;">Fecha</span><br>
-                <strong>{{ fecha_generacion }}</strong>
-            </td>
-        </tr>
-    </table>
-
-    {% for grupo in ordenes_agrupadas %}
-    <div class="orden-header">
-        Orden #{{ grupo.orden.numero }} &mdash; {{ grupo.orden.referencia.codigo }} ({{ grupo.orden.cliente.nombre }})
+    <div class="info-bar">
+        <div><span>Empleado:</span> <strong>{{ empleado.nombre }}</strong></div>
+        <div><span>Documento:</span> <strong>{{ empleado.documento }}</strong></div>
     </div>
+
     <table>
         <thead>
             <tr>
-                <th>Fecha</th>
+                <th>Orden</th>
+                <th>Referencia</th>
                 <th>Proceso</th>
-                <th class="text-right">Cantidad</th>
+                <th class="text-right">Pares</th>
                 <th class="text-right">Precio Unit.</th>
                 <th class="text-right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
+            {% for grupo in ordenes_agrupadas %}
             {% for r in grupo.registros %}
             <tr>
-                <td>{{ r.fecha }}</td>
+                {% if forloop.first %}
+                <td rowspan="{{ grupo.registros|length }}">#{{ grupo.orden.numero }}</td>
+                <td rowspan="{{ grupo.registros|length }}">{{ grupo.orden.referencia.codigo }}</td>
+                {% endif %}
                 <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
                 <td class="text-right">{{ r.cantidad_realizada }}</td>
-                <td class="text-right">${{ r.proceso_referencia.precio_mano_obra }}</td>
-                <td class="text-right">${{ r.total_pago }}</td>
+                <td class="text-right">${{ r.precio_mano_obra_fmt }}</td>
+                <td class="text-right">${{ r.total_pago_fmt }}</td>
             </tr>
             {% endfor %}
             <tr class="subtotal-row">
-                <td colspan="2">Subtotal Orden #{{ grupo.orden.numero }}</td>
+                <td colspan="3" class="text-right">Subtotal Orden #{{ grupo.orden.numero }}</td>
                 <td class="text-right">{{ grupo.pares }}</td>
                 <td></td>
-                <td class="text-right">${{ grupo.subtotal }}</td>
+                <td class="text-right">${{ grupo.subtotal_fmt }}</td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
-    {% endfor %}
 
-    <div class="total-box">
-        <div class="total-pares">{{ total_pares }} pares en total</div>
-        <div class="total-label">TOTAL A PAGAR</div>
-        <div class="total-value">${{ total_general }}</div>
+    <div class="total-bar">
+        <div>
+            <div class="label">TOTAL A PAGAR</div>
+            <div class="pares">{{ total_pares }} pares en total</div>
+        </div>
+        <div class="value">${{ total_general_fmt }}</div>
     </div>
 
-    <div class="firma">
+    <div class="firma-section">
         <div class="firma-linea">
             <div class="linea"></div>
             <span>Firma Empleado</span>
@@ -207,7 +198,7 @@
     </div>
 
     <div class="footer">
-        Documento generado el {{ fecha_generacion }} &mdash; ERP Zapatería
+        Generado el {{ fecha_generacion }} &mdash; ERP Zapatería
     </div>
 </body>
 </html>

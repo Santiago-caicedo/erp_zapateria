@@ -16,13 +16,17 @@ urlpatterns = [
     path('ordenes/<int:pk>/', views.orden_detalle, name='orden_detalle'),
     path('ordenes/<int:pk>/editar/', views.orden_editar, name='orden_editar'),
     path('ordenes/<int:pk>/eliminar/', views.orden_eliminar, name='orden_eliminar'),
+    path('ordenes/<int:pk>/pdf/', views.orden_pdf, name='orden_pdf'),
 
-    # RegistroTrabajo (hijo de orden)
+    # RegistroTrabajo
+    path('registro-trabajo/', views.registro_trabajo, name='registro_trabajo'),
     path('ordenes/<int:orden_pk>/registro/agregar/', views.registro_agregar, name='registro_agregar'),
     path('registro/<int:pk>/eliminar/', views.registro_eliminar, name='registro_eliminar'),
 
     # API
     path('api/referencia/<int:pk>/', views.api_referencia_detalle, name='api_referencia_detalle'),
+    path('api/ordenes-activas/', views.api_ordenes_activas, name='api_ordenes_activas'),
+    path('api/procesos-orden/<int:orden_pk>/', views.api_procesos_orden, name='api_procesos_orden'),
 
     # Nómina
     path('nomina/', views.nomina, name='nomina'),

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load produccion_tags %}
 
 {% block titulo %}Historial de Pagos{% endblock %}
 {% block page_title %}Historial de Pagos{% endblock %}
@@ -40,9 +41,9 @@
                         <th>Orden</th>
                         <th>Referencia</th>
                         <th>Proceso</th>
-                        <th>Cant.</th>
-                        <th>Precio Unit.</th>
-                        <th>Subtotal</th>
+                        <th class="text-end">Cant.</th>
+                        <th class="text-end">Precio Unit.</th>
+                        <th class="text-end">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,9 +54,9 @@
                         <td><a href="{% url 'produccion:orden_detalle' r.orden.pk %}" class="text-decoration-none">#{{ r.orden.numero }}</a></td>
                         <td>{{ r.orden.referencia.codigo }}</td>
                         <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
-                        <td>{{ r.cantidad_realizada }}</td>
-                        <td>${{ r.proceso_referencia.precio_mano_obra }}</td>
-                        <td class="fw-bold text-success">${{ r.total_pago }}</td>
+                        <td class="text-end">{{ r.cantidad_realizada|miles }}</td>
+                        <td class="text-end">{{ r.proceso_referencia.precio_mano_obra|peso }}</td>
+                        <td class="text-end fw-bold text-success">{{ r.total_pago|peso }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

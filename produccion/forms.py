@@ -12,14 +12,13 @@ class OrdenProduccionForm(forms.ModelForm):
     class Meta:
         model = OrdenProduccion
         fields = [
-            'cliente', 'referencia', 'fecha_entrega',
+            'cliente', 'referencia',
             'talla_34', 'talla_35', 'talla_36', 'talla_37',
             'talla_38', 'talla_39', 'talla_40',
         ]
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-select'}),
             'referencia': forms.Select(attrs={'class': 'form-select', 'id': 'id_referencia'}),
-            'fecha_entrega': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'talla_34': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0', 'value': '0'}),
             'talla_35': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0', 'value': '0'}),
             'talla_36': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0', 'value': '0'}),
@@ -44,14 +43,13 @@ class OrdenEditarForm(forms.ModelForm):
     class Meta:
         model = OrdenProduccion
         fields = [
-            'cliente', 'referencia', 'fecha_entrega', 'estado',
+            'cliente', 'referencia', 'estado',
             'talla_34', 'talla_35', 'talla_36', 'talla_37',
             'talla_38', 'talla_39', 'talla_40',
         ]
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-select'}),
             'referencia': forms.Select(attrs={'class': 'form-select', 'id': 'id_referencia'}),
-            'fecha_entrega': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'estado': forms.Select(attrs={'class': 'form-select'}),
             'talla_34': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0'}),
             'talla_35': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0'}),

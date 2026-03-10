@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+{% load produccion_tags %}
+
+{% block titulo %}Registrar Trabajo{% endblock %}
+{% block page_title %}Registrar Trabajo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .autocomplete-wrapper {
+        position: relative;
+    }
+    .autocomplete-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        max-height: 250px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+        box-shadow: var(--shadow-md);
+        display: none;
+    }
+    .autocomplete-list.show {
+        display: block;
+    }
+    .autocomplete-item {
+        padding: .5rem .75rem;
+        cursor: pointer;
+        font-size: .875rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    .autocomplete-item:hover,
+    .autocomplete-item.active {
+        background: var(--accent);
+        color: #fff;
+    }
+    .autocomplete-item.disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+    .autocomplete-item.disabled:hover {
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+    .autocomplete-item .item-main {
+        font-weight: 500;
+    }
+    .autocomplete-item .item-sub {
+        font-size: .78rem;
+        opacity: .7;
+    }
+    .autocomplete-item.disabled .item-sub {
+        color: #dc3545;
+        opacity: 1;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="page-header">
+    <h2>Registrar Trabajo</h2>
+</div>
+
+<!-- Empleado -->
+<div class="card border-0 mb-3">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Empleado</label>
+                <select id="select-empleado" class="form-select">
+                    <option value="">Seleccionar empleado...</option>
+                    {% for e in empleados %}
+                    <option value="{{ e.pk }}">{{ e.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Agregar líneas -->
+<div class="card border-0 mb-3" id="seccion-agregar" style="display:none;">
+    <div class="card-body">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-plus-circle me-1"></i>Agregar línea de trabajo</h6>
+        <div class="row g-2 align-items-end">
+            <!-- Orden con búsqueda -->
+            <div class="col-md-5">
+                <label class="form-label small text-muted mb-1">Orden</label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="input-orden" class="form-control form-control-sm" placeholder="Escriba N° de orden o referencia..." autocomplete="off">
+                    <div class="autocomplete-list" id="lista-ordenes"></div>
+                </div>
+                <input type="hidden" id="orden-id">
+            </div>
+            <!-- Proceso con búsqueda -->
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Proceso</label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="input-proceso" class="form-control form-control-sm" placeholder="Escriba nombre del proceso..." autocomplete="off" disabled>
+                    <div class="autocomplete-list" id="lista-procesos"></div>
+                </div>
+                <input type="hidden" id="proceso-id">
+            </div>
+            <!-- Info de pares + precio -->
+            <div class="col-md-1">
+                <span id="precio-info" class="badge bg-success bg-opacity-10 text-success d-none" style="font-size:.85rem;"></span>
+            </div>
+            <!-- Botón agregar -->
+            <div class="col-md-2">
+                <button type="button" id="btn-agregar" class="btn btn-sm btn-primary w-100" disabled>
+                    <i class="bi bi-plus-lg me-1"></i>Agregar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de líneas -->
+<div class="card border-0 mb-3" id="seccion-tabla" style="display:none;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Orden</th>
+                        <th>Referencia</th>
+                        <th>Cliente</th>
+                        <th>Proceso</th>
+                        <th class="text-end">Pares</th>
+                        <th class="text-end">Precio/par</th>
+                        <th class="text-end">Subtotal</th>
+                        <th style="width:60px"></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-lineas"></tbody>
+                <tfoot>
+                    <tr class="table-light">
+                        <td colspan="4" class="fw-bold">Total</td>
+                        <td class="text-end fw-bold" id="total-pares">0</td>
+                        <td></td>
+                        <td class="text-end fw-bold text-success" id="total-pago">$0</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent text-end">
+        <button type="button" id="btn-guardar" class="btn btn-success">
+            <i class="bi bi-check-lg me-1"></i>Guardar todo
+        </button>
+    </div>
+</div>
+
+<!-- Alert -->
+<div id="alert-exito" class="alert alert-success alert-dismissible fade d-none" role="alert">
+    <span id="alert-mensaje"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectEmpleado = document.getElementById('select-empleado');
+    const inputOrden = document.getElementById('input-orden');
+    const ordenId = document.getElementById('orden-id');
+    const listaOrdenes = document.getElementById('lista-ordenes');
+    const inputProceso = document.getElementById('input-proceso');
+    const procesoId = document.getElementById('proceso-id');
+    const listaProcesos = document.getElementById('lista-procesos');
+    const precioInfo = document.getElementById('precio-info');
+    const btnAgregar = document.getElementById('btn-agregar');
+    const btnGuardar = document.getElementById('btn-guardar');
+    const seccionAgregar = document.getElementById('seccion-agregar');
+    const seccionTabla = document.getElementById('seccion-tabla');
+    const tablaLineas = document.getElementById('tabla-lineas');
+
+    let lineas = [];
+    let ordenesData = [];
+    let procesosData = [];
+    let ordenSeleccionada = null;
+    let procesoSeleccionado = null;
+    let activeIndex = -1;
+
+    function formatPeso(valor) {
+        return '$' + Number(valor).toLocaleString('es-CO');
+    }
+
+    // ─── Empleado ───
+    selectEmpleado.addEventListener('change', function() {
+        if (!this.value) {
+            seccionAgregar.style.display = 'none';
+            return;
+        }
+        fetch("{% url 'produccion:api_ordenes_activas' %}")
+            .then(r => r.json())
+            .then(data => {
+                ordenesData = data;
+                seccionAgregar.style.display = '';
+                resetForm();
+            });
+    });
+
+    // ─── Autocomplete Orden ───
+    inputOrden.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        ordenId.value = '';
+        ordenSeleccionada = null;
+        resetProceso();
+
+        if (!q) { listaOrdenes.classList.remove('show'); return; }
+
+        const filtradas = ordenesData.filter(o =>
+            String(o.numero).includes(q) ||
+            o.referencia.toLowerCase().includes(q) ||
+            o.cliente.toLowerCase().includes(q)
+        ).slice(0, 10);
+
+        renderListaOrdenes(filtradas);
+    });
+
+    inputOrden.addEventListener('focus', function() {
+        if (this.value.trim()) this.dispatchEvent(new Event('input'));
+    });
+
+    function renderListaOrdenes(items) {
+        activeIndex = -1;
+        if (items.length === 0) { listaOrdenes.classList.remove('show'); return; }
+
+        listaOrdenes.innerHTML = items.map((o, i) => `
+            <div class="autocomplete-item" data-index="${i}" data-id="${o.id}">
+                <div class="item-main">#${o.numero} — ${o.referencia}</div>
+                <div class="item-sub">${o.cliente} · ${o.tipo_zapato} · ${o.cantidad_total} pares</div>
+            </div>
+        `).join('');
+        listaOrdenes.classList.add('show');
+
+        listaOrdenes.querySelectorAll('.autocomplete-item').forEach(el => {
+            el.addEventListener('click', function() {
+                const id = this.dataset.id;
+                seleccionarOrden(ordenesData.find(o => o.id == id));
+            });
+        });
+    }
+
+    function seleccionarOrden(orden) {
+        ordenSeleccionada = orden;
+        ordenId.value = orden.id;
+        inputOrden.value = `#${orden.numero} — ${orden.referencia} (${orden.cliente}) — ${orden.cantidad_total} pares`;
+        listaOrdenes.classList.remove('show');
+        cargarProcesosOrden(orden.id);
+    }
+
+    // ─── Cargar procesos de la orden ───
+    function cargarProcesosOrden(id) {
+        inputProceso.disabled = true;
+        inputProceso.value = '';
+        procesoId.value = '';
+        procesoSeleccionado = null;
+
+        fetch(`/produccion/api/procesos-orden/${id}/`)
+            .then(r => r.json())
+            .then(data => {
+                procesosData = data;
+                inputProceso.disabled = false;
+                inputProceso.focus();
+            });
+    }
+
+    // ─── Autocomplete Proceso ───
+    inputProceso.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        procesoId.value = '';
+        procesoSeleccionado = null;
+        precioInfo.classList.add('d-none');
+        btnAgregar.disabled = true;
+
+        if (!q) {
+            renderListaProcesos(procesosData);
+            return;
+        }
+
+        const filtrados = procesosData.filter(p =>
+            p.nombre.toLowerCase().includes(q)
+        );
+        renderListaProcesos(filtrados);
+    });
+
+    inputProceso.addEventListener('focus', function() {
+        renderListaProcesos(procesosData);
+    });
+
+    function renderListaProcesos(items) {
+        activeIndex = -1;
+        if (items.length === 0) { listaProcesos.classList.remove('show'); return; }
+
+        const lineasOrden = lineas.filter(l => l.orden_id == ordenId.value);
+
+        listaProcesos.innerHTML = items.map((p, i) => {
+            const enLineas = lineasOrden.some(l => l.proceso_id == p.id);
+            const yaRegistrado = p.registrado || enLineas;
+            const disabledCls = yaRegistrado ? ' disabled' : '';
+            const subTexto = yaRegistrado
+                ? 'Ya registrado en esta orden'
+                : `${formatPeso(p.precio)}/par`;
+            return `
+                <div class="autocomplete-item${disabledCls}" data-index="${i}" data-id="${p.id}" data-registrado="${yaRegistrado}">
+                    <div class="item-main">${p.nombre}</div>
+                    <div class="item-sub">${subTexto}</div>
+                </div>
+            `;
+        }).join('');
+        listaProcesos.classList.add('show');
+
+        listaProcesos.querySelectorAll('.autocomplete-item:not(.disabled)').forEach(el => {
+            el.addEventListener('click', function() {
+                const id = this.dataset.id;
+                seleccionarProceso(procesosData.find(p => p.id == id));
+            });
+        });
+    }
+
+    function seleccionarProceso(proceso) {
+        procesoSeleccionado = proceso;
+        procesoId.value = proceso.id;
+        inputProceso.value = proceso.nombre;
+        listaProcesos.classList.remove('show');
+        precioInfo.textContent = `${formatPeso(proceso.precio)}/par`;
+        precioInfo.classList.remove('d-none');
+        btnAgregar.disabled = false;
+    }
+
+    // ─── Navegación con teclado ───
+    function setupKeyboardNav(input, lista) {
+        input.addEventListener('keydown', function(e) {
+            const visibles = lista.querySelectorAll('.autocomplete-item:not(.disabled)');
+            if (!lista.classList.contains('show') || visibles.length === 0) {
+                if (e.key === 'Enter') { e.preventDefault(); }
+                return;
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, visibles.length - 1);
+                updateActive(visibles);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                updateActive(visibles);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeIndex >= 0 && activeIndex < visibles.length) {
+                    visibles[activeIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                lista.classList.remove('show');
+                activeIndex = -1;
+            }
+        });
+    }
+
+    function updateActive(items) {
+        items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+        if (activeIndex >= 0 && items[activeIndex]) {
+            items[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    setupKeyboardNav(inputOrden, listaOrdenes);
+    setupKeyboardNav(inputProceso, listaProcesos);
+
+    // Cerrar listas al clickear fuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#input-orden') && !e.target.closest('#lista-ordenes')) {
+            listaOrdenes.classList.remove('show');
+        }
+        if (!e.target.closest('#input-proceso') && !e.target.closest('#lista-procesos')) {
+            listaProcesos.classList.remove('show');
+        }
+    });
+
+    // ─── Agregar línea ───
+    btnAgregar.addEventListener('click', function() {
+        const cantidad = ordenSeleccionada.cantidad_total;
+        const precio = parseFloat(procesoSeleccionado.precio);
+
+        lineas.push({
+            orden_id: ordenSeleccionada.id,
+            orden_numero: ordenSeleccionada.numero,
+            referencia: ordenSeleccionada.referencia,
+            cliente: ordenSeleccionada.cliente,
+            proceso_id: procesoSeleccionado.id,
+            proceso_nombre: procesoSeleccionado.nombre,
+            cantidad: cantidad,
+            precio: precio,
+        });
+
+        renderTabla();
+        resetForm();
+        inputOrden.focus();
+    });
+
+    function resetForm() {
+        inputOrden.value = '';
+        ordenId.value = '';
+        ordenSeleccionada = null;
+        resetProceso();
+    }
+
+    function resetProceso() {
+        inputProceso.value = '';
+        inputProceso.disabled = true;
+        procesoId.value = '';
+        procesoSeleccionado = null;
+        procesosData = [];
+        precioInfo.classList.add('d-none');
+        btnAgregar.disabled = true;
+        listaProcesos.classList.remove('show');
+    }
+
+    function renderTabla() {
+        if (lineas.length === 0) {
+            seccionTabla.style.display = 'none';
+            return;
+        }
+        seccionTabla.style.display = '';
+
+        let html = '';
+        let totalPares = 0;
+        let totalPago = 0;
+
+        lineas.forEach((l, i) => {
+            const subtotal = l.cantidad * l.precio;
+            totalPares += l.cantidad;
+            totalPago += subtotal;
+            html += `
+                <tr>
+                    <td class="fw-bold">#${l.orden_numero}</td>
+                    <td>${l.referencia}</td>
+                    <td>${l.cliente}</td>
+                    <td>${l.proceso_nombre}</td>
+                    <td class="text-end">${l.cantidad}</td>
+                    <td class="text-end">${formatPeso(l.precio)}</td>
+                    <td class="text-end fw-semibold">${formatPeso(subtotal)}</td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="quitarLinea(${i})"><i class="bi bi-x-lg"></i></button></td>
+                </tr>
+            `;
+        });
+
+        tablaLineas.innerHTML = html;
+        document.getElementById('total-pares').textContent = totalPares;
+        document.getElementById('total-pago').textContent = formatPeso(totalPago);
+    }
+
+    window.quitarLinea = function(index) {
+        lineas.splice(index, 1);
+        renderTabla();
+    };
+
+    // ─── Guardar ───
+    btnGuardar.addEventListener('click', function() {
+        if (lineas.length === 0) return;
+
+        const payload = {
+            empleado: selectEmpleado.value,
+            lineas: lineas.map(l => ({
+                orden_id: l.orden_id,
+                proceso_id: l.proceso_id,
+                cantidad: l.cantidad,
+            })),
+        };
+
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
+
+        fetch("{% url 'produccion:registro_trabajo' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+            if (data.ok) {
+                lineas = [];
+                renderTabla();
+                resetForm();
+                const alertEl = document.getElementById('alert-exito');
+                document.getElementById('alert-mensaje').textContent = data.mensaje;
+                alertEl.classList.remove('d-none');
+                alertEl.classList.add('show');
+            } else {
+                alert(data.error || 'Error al guardar.');
+            }
+        })
+        .catch(() => alert('Error de conexión.'))
+        .finally(() => {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar todo';
+        });
+    });
+
+    function getCookie(name) {
+        let val = null;
+        document.cookie.split(';').forEach(c => {
+            c = c.trim();
+            if (c.startsWith(name + '=')) val = decodeURIComponent(c.substring(name.length + 1));
+        });
+        return val;
+    }
+});
+</script>
+{% endblock %}

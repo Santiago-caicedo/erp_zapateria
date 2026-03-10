@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from empleados.models import Empleado
 from inventario.models import Referencia, ProcesoReferencia
 
@@ -21,14 +22,21 @@ class OrdenProduccion(models.Model):
         ('En Proceso', 'En Proceso'),
         ('Finalizado', 'Finalizado'),
         ('Entregado', 'Entregado'),
+        ('Pagado', 'Pagado'),
     ]
 
     numero = models.PositiveIntegerField(unique=True, editable=False, verbose_name="Número de Orden")
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ordenes')
     referencia = models.ForeignKey(Referencia, on_delete=models.PROTECT, related_name='ordenes', verbose_name="Referencia")
     fecha_creacion = models.DateField(auto_now_add=True, verbose_name="Fecha de Creación")
-    fecha_entrega = models.DateField(verbose_name="Fecha de Entrega Estimada")
     estado = models.CharField(max_length=20, choices=ESTADOS, default='Pendiente', verbose_name="Estado")
+
+    # Fechas por estado
+    fecha_pendiente = models.DateField(null=True, blank=True, verbose_name="Fecha Pendiente")
+    fecha_en_proceso = models.DateField(null=True, blank=True, verbose_name="Fecha En Proceso")
+    fecha_finalizado = models.DateField(null=True, blank=True, verbose_name="Fecha Finalizado")
+    fecha_entregado = models.DateField(null=True, blank=True, verbose_name="Fecha Entregado")
+    fecha_pagado = models.DateField(null=True, blank=True, verbose_name="Fecha Pagado")
 
     # Tallas
     talla_34 = models.PositiveIntegerField(default=0, verbose_name="Talla 34")
@@ -46,12 +54,31 @@ class OrdenProduccion(models.Model):
             self.talla_37 + self.talla_38 + self.talla_39 + self.talla_40
         )
 
+    ESTADO_FECHA_MAP = {
+        'Pendiente': 'fecha_pendiente',
+        'En Proceso': 'fecha_en_proceso',
+        'Finalizado': 'fecha_finalizado',
+        'Entregado': 'fecha_entregado',
+        'Pagado': 'fecha_pagado',
+    }
+
+    @property
+    def fecha_estado_actual(self):
+        campo = self.ESTADO_FECHA_MAP.get(self.estado)
+        return getattr(self, campo, None) if campo else None
+
     def save(self, *args, **kwargs):
         if not self.numero:
             max_num = OrdenProduccion.objects.aggregate(
                 max_num=models.Max('numero')
             )['max_num']
             self.numero = (max_num or 0) + 1
+
+        # Registrar fecha del estado actual si no tiene
+        campo_fecha = self.ESTADO_FECHA_MAP.get(self.estado)
+        if campo_fecha and not getattr(self, campo_fecha):
+            setattr(self, campo_fecha, timezone.localdate())
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -67,6 +94,14 @@ class RegistroTrabajo(models.Model):
     fecha = models.DateField(auto_now_add=True, verbose_name="Fecha de Registro")
     pagado = models.BooleanField(default=False, verbose_name="Pagado")
     fecha_pago = models.DateField(null=True, blank=True, verbose_name="Fecha de Pago")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['orden', 'proceso_referencia'],
+                name='unique_orden_proceso',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.empleado.nombre} - {self.proceso_referencia.proceso_base.nombre} ({self.cantidad_realizada} pares)"

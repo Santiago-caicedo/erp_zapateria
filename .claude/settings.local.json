@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(grep:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(pip list:*)",
+      "Bash(python:*)",
+      "Bash(xargs:*)",
+      "Bash(lsof:*)",
+      "Bash(ss:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(sed:*)"
     ]
   }
 }

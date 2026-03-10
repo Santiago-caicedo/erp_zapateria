@@ -114,23 +114,12 @@
 
             <!-- Datos básicos -->
             <div class="section-title"><i class="bi bi-clipboard-fill me-1"></i>Datos de la Orden</div>
-            <div class="section-subtitle">Cliente y fecha de entrega.</div>
+            <div class="section-subtitle">Selecciona el cliente.</div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="form-group mb-0">
-                        <label for="id_cliente">Cliente</label>
-                        {{ form.cliente }}
-                        {% if form.cliente.errors %}<div class="invalid-feedback d-block">{{ form.cliente.errors.0 }}</div>{% endif %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-0">
-                        <label for="id_fecha_entrega">Fecha de Entrega</label>
-                        {{ form.fecha_entrega }}
-                        {% if form.fecha_entrega.errors %}<div class="invalid-feedback d-block">{{ form.fecha_entrega.errors.0 }}</div>{% endif %}
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="id_cliente">Cliente</label>
+                {{ form.cliente }}
+                {% if form.cliente.errors %}<div class="invalid-feedback d-block">{{ form.cliente.errors.0 }}</div>{% endif %}
             </div>
 
             {% if form.estado %}

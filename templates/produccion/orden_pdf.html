@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: letter;
+            margin: 0.8cm;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9px;
+            color: #000;
+            line-height: 1.2;
+        }
+        /* ─── CABECERA ─── */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+            margin-bottom: 6px;
+        }
+        .header-table td {
+            border: 1px solid #000;
+            padding: 3px 6px;
+            vertical-align: top;
+        }
+        .header-table .label {
+            font-weight: 700;
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #333;
+        }
+        .header-table .value {
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .header-table .value-lg {
+            font-weight: 900;
+            font-size: 18px;
+            color: #000;
+        }
+        .orden-numero {
+            font-size: 22px;
+            font-weight: 900;
+        }
+        .ref-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 1px solid #999;
+        }
+        .ref-image-placeholder {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 8px;
+        }
+
+        /* ─── MATERIALES ─── */
+        .materiales-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1.5px solid #000;
+            margin-bottom: 6px;
+        }
+        .materiales-table td {
+            border: 1px solid #000;
+            padding: 2px 5px;
+            font-size: 8px;
+        }
+        .materiales-table .mat-label {
+            font-weight: 700;
+            font-size: 7px;
+            text-transform: uppercase;
+            width: 100px;
+        }
+        .materiales-table .mat-value {
+            font-weight: 600;
+        }
+
+        /* ─── TALLAS ─── */
+        .tallas-table {
+            border-collapse: collapse;
+            border: 1.5px solid #000;
+            margin-bottom: 6px;
+        }
+        .tallas-table th, .tallas-table td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 2px 6px;
+            font-size: 9px;
+            min-width: 28px;
+        }
+        .tallas-table th {
+            background: #eee;
+            font-weight: 700;
+        }
+        .tallas-table td {
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .tallas-table .pares-label {
+            font-size: 8px;
+            font-weight: 700;
+            background: #eee;
+        }
+        .tallas-table .pares-value {
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        /* ─── OBSERVACION ─── */
+        .obs-box {
+            border: 1.5px solid #000;
+            padding: 3px 6px;
+            margin-bottom: 8px;
+            min-height: 22px;
+            font-size: 8px;
+        }
+        .obs-box .label { font-weight: 700; text-transform: uppercase; font-size: 7px; }
+
+        /* ─── TICKETS DE PROCESOS ─── */
+        .tickets-grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tickets-grid td {
+            width: 50%;
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .ticket {
+            border: 1.5px dashed #000;
+            padding: 5px 7px;
+            margin: 2px;
+            page-break-inside: avoid;
+        }
+        .ticket-name {
+            font-size: 12px;
+            font-weight: 900;
+            color: #c00;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            margin-bottom: 3px;
+        }
+        .ticket-info {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ticket-info td {
+            padding: 1px 3px;
+            font-size: 8px;
+            border: none;
+        }
+        .ticket-info .tk-label {
+            font-weight: 700;
+            font-size: 7px;
+            text-transform: uppercase;
+            color: #333;
+            width: 65px;
+        }
+        .ticket-info .tk-value {
+            font-weight: 700;
+            font-size: 10px;
+        }
+        .ticket-info .tk-orden-num {
+            font-size: 16px;
+            font-weight: 900;
+            color: #c00;
+        }
+        .ticket-info .tk-pares {
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .ticket-tallas {
+            border-collapse: collapse;
+            margin-top: 3px;
+            table-layout: fixed;
+            width: 100%;
+        }
+        .ticket-tallas th, .ticket-tallas td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 1px 0;
+            font-size: 7px;
+            width: 28px;
+            max-width: 28px;
+            min-width: 28px;
+        }
+        .ticket-tallas th {
+            background: #eee;
+            font-weight: 700;
+        }
+        .ticket-tallas td {
+            font-weight: 700;
+            font-size: 9px;
+        }
+        .ticket-tallas .tk-pares-label {
+            font-size: 7px;
+            font-weight: 700;
+            background: #eee;
+        }
+        .ticket-tallas .tk-pares-val {
+            font-size: 11px;
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ CABECERA PRINCIPAL ═══ -->
+    <table class="header-table">
+        <tr>
+            <td style="width:130px;">
+                <span class="label">No. ORDEN</span><br>
+                <span class="orden-numero">{{ orden.numero }}</span>
+            </td>
+            <td style="width:130px;">
+                <span class="label">Cliente</span><br>
+                <span class="value">{{ orden.cliente.nombre }}</span>
+            </td>
+            <td>
+                <span class="label">Referencia</span><br>
+                <span class="value-lg">{{ orden.referencia.codigo }}</span>
+            </td>
+            <td style="width:80px; text-align:right;">
+                <span class="label">Fecha</span><br>
+                <span class="value">{{ fecha_generacion }}</span>
+            </td>
+            <td rowspan="2" style="width:110px; text-align:center; vertical-align:middle;">
+                {% if orden.referencia.imagen %}
+                    <img src="{{ imagen_uri }}" class="ref-image" alt="{{ orden.referencia.codigo }}">
+                {% else %}
+                    <div class="ref-image-placeholder">SIN IMAGEN</div>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span class="label">Tipo de Zapato</span><br>
+                <span class="value">{{ orden.referencia.tipo_zapato.nombre }}</span>
+            </td>
+            <td colspan="2">
+                <span class="label">Estado</span><br>
+                <span class="value">{{ orden.estado }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ═══ MATERIALES + TALLAS ═══ -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
+        <tr>
+            <td style="vertical-align:top; width:55%; padding-right:4px;">
+                <table class="materiales-table">
+                    {% for m in materiales %}
+                    <tr>
+                        <td class="mat-label">{{ m.tipo }}</td>
+                        <td class="mat-value">{{ m.nombre }}</td>
+                        <td style="text-align:right; width:60px; font-size:7px;">{{ m.cantidad }} {{ m.unidad }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+            <td style="vertical-align:top;">
+                <table class="tallas-table">
+                    <tr>
+                        {% for t in tallas %}
+                        <th>{{ t.numero }}</th>
+                        {% endfor %}
+                        <td class="pares-label" rowspan="2" style="vertical-align:middle;">Pares</td>
+                    </tr>
+                    <tr>
+                        {% for t in tallas %}
+                        <td>{{ t.cantidad }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td colspan="{{ tallas|length }}" style="text-align:right; font-size:7px; font-weight:700;">Total</td>
+                        <td class="pares-value">{{ cantidad_total }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ═══ OBSERVACION ═══ -->
+    <div class="obs-box">
+        <span class="label">Observacion:</span> {{ orden.referencia.descripcion|default:"" }}
+    </div>
+
+    <!-- ═══ TICKETS DE PROCESOS (recortables) ═══ -->
+    <table class="tickets-grid">
+        {% for fila in procesos_pares %}
+        <tr>
+            {% for p in fila %}
+            <td>
+                <div class="ticket">
+                    <div class="ticket-name">{{ p.proceso_base.nombre }}</div>
+                    <table class="ticket-info">
+                        <tr>
+                            <td class="tk-label">No. Orden</td>
+                            <td class="tk-orden-num">{{ orden.numero }}</td>
+                            <td class="tk-label" style="text-align:right;">Pares</td>
+                        </tr>
+                        <tr>
+                            <td class="tk-label">Referencia</td>
+                            <td class="tk-value">{{ orden.referencia.codigo }}</td>
+                            <td class="tk-pares" style="text-align:right;">{{ cantidad_total }}</td>
+                        </tr>
+                        <tr>
+                            <td class="tk-label">Cliente</td>
+                            <td class="tk-value" colspan="2">{{ orden.cliente.nombre }}</td>
+                        </tr>
+                    </table>
+                    <table class="ticket-tallas">
+                        <tr>
+                            {% for t in tallas %}
+                            <th>{{ t.numero }}</th>
+                            {% endfor %}
+                            <td class="tk-pares-label" rowspan="2" style="vertical-align:middle;">Pares</td>
+                        </tr>
+                        <tr>
+                            {% for t in tallas %}
+                            <td>{{ t.cantidad }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td colspan="{{ tallas|length }}" style="text-align:right; font-size:6px; font-weight:700;">Total</td>
+                            <td class="tk-pares-val">{{ cantidad_total }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            {% endfor %}
+            {% if fila|length == 1 %}<td></td>{% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>

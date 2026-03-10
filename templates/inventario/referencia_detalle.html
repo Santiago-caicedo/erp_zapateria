@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load produccion_tags %}
 
 {% block titulo %}{{ referencia.codigo }}{% endblock %}
 {% block page_title %}Detalle de Referencia{% endblock %}
@@ -71,14 +72,14 @@
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead>
-                        <tr><th>Material</th><th>Tipo</th><th>Cantidad</th><th>Unidad</th></tr>
+                        <tr><th>Material</th><th>Tipo</th><th class="text-end">Cantidad</th><th>Unidad</th></tr>
                     </thead>
                     <tbody>
                         {% for c in consumos %}
                         <tr>
                             <td class="fw-semibold">{{ c.material.nombre }}</td>
                             <td><span class="consumo-tipo-badge bg-light text-muted">{{ c.material.tipo.nombre }}</span></td>
-                            <td>{{ c.cantidad_consumida }}</td>
+                            <td class="text-end">{{ c.cantidad_consumida }}</td>
                             <td><span class="text-muted">{{ c.material.unidad_medida }}</span></td>
                         </tr>
                         {% empty %}
@@ -99,13 +100,13 @@
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead>
-                        <tr><th>Proceso</th><th>Precio M.O.</th></tr>
+                        <tr><th>Proceso</th><th class="text-end">Precio M.O.</th></tr>
                     </thead>
                     <tbody>
                         {% for p in procesos %}
                         <tr>
                             <td class="fw-semibold">{{ p.proceso_base.nombre }}</td>
-                            <td>${{ p.precio_mano_obra }}</td>
+                            <td class="text-end">{{ p.precio_mano_obra|peso }}</td>
                         </tr>
                         {% empty %}
                         <tr><td colspan="2" class="text-center text-muted py-3">Sin procesos asignados.</td></tr>

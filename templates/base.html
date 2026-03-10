@@ -626,7 +626,8 @@
 
         <div class="sidebar-section">Producción</div>
         <ul class="sidebar-nav">
-            <li><a href="{% url 'produccion:orden_lista' %}" class="{% if 'orden' in request.resolver_match.url_name|default:'' or 'detalle' in request.resolver_match.url_name|default:'' or 'registro' in request.resolver_match.url_name|default:'' %}active{% endif %}"><i class="bi bi-clipboard2-check-fill"></i> Órdenes</a></li>
+            <li><a href="{% url 'produccion:orden_lista' %}" class="{% if 'orden' in request.resolver_match.url_name|default:'' %}active{% endif %}"><i class="bi bi-clipboard2-check-fill"></i> Órdenes</a></li>
+            <li><a href="{% url 'produccion:registro_trabajo' %}" class="{% if request.resolver_match.url_name|default:'' == 'registro_trabajo' %}active{% endif %}"><i class="bi bi-hammer"></i> Registrar Trabajo</a></li>
         </ul>
 
         <div class="sidebar-section">Reportes</div>

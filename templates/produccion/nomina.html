@@ -1,48 +1,163 @@
 {% extends "base.html" %}
+{% load produccion_tags %}
 
 {% block titulo %}Nómina{% endblock %}
 {% block page_title %}Nómina{% endblock %}
 
+{% block extra_css %}
+<style>
+    .nomina-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .stat-icon.empleados { background: #ede9fe; color: #7c3aed; }
+    .stat-icon.pares { background: #dbeafe; color: #2563eb; }
+    .stat-icon.pendiente { background: #dcfce7; color: #16a34a; }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .stat-label {
+        font-size: .78rem;
+        color: var(--text-secondary);
+    }
+    .empleado-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: box-shadow .15s;
+    }
+    .empleado-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+    .empleado-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .empleado-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .empleado-nombre {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--text-primary);
+    }
+    .empleado-meta {
+        font-size: .82rem;
+        color: var(--text-secondary);
+    }
+    .empleado-pago {
+        text-align: right;
+    }
+    .empleado-pago-valor {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #16a34a;
+    }
+    .empleado-pago-label {
+        font-size: .75rem;
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
 {% block contenido %}
 <div class="page-header">
-    <h2>Nómina - Pendientes de Pago</h2>
-    <a href="{% url 'produccion:nomina_historial' %}" class="btn btn-secondary"><i class="bi bi-clock-history me-1"></i>Historial</a>
+    <h2>Nómina</h2>
+    <a href="{% url 'produccion:nomina_historial' %}" class="btn btn-secondary"><i class="bi bi-clock-history me-1"></i>Historial de Pagos</a>
 </div>
 
 {% if resultados %}
-<div class="card border-0">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>Empleado</th>
-                        <th>Total Pares</th>
-                        <th>Total Pendiente</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in resultados %}
-                    <tr>
-                        <td class="fw-semibold">{{ r.empleado__nombre }}</td>
-                        <td>{{ r.total_pares }}</td>
-                        <td class="fw-bold text-success">${{ r.total_pago }}</td>
-                        <td>
-                            <a href="{% url 'produccion:nomina_detalle' r.empleado__id %}" class="btn btn-sm btn-primary"><i class="bi bi-eye me-1"></i>Ver Detalle</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Estadísticas -->
+<div class="nomina-stats">
+    <div class="stat-card">
+        <div class="stat-icon empleados"><i class="bi bi-people-fill"></i></div>
+        <div>
+            <div class="stat-value">{{ total_empleados }}</div>
+            <div class="stat-label">Empleados con pendientes</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon pares"><i class="bi bi-box-seam"></i></div>
+        <div>
+            <div class="stat-value">{{ gran_total_pares|miles }}</div>
+            <div class="stat-label">Pares procesados</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon pendiente"><i class="bi bi-cash-stack"></i></div>
+        <div>
+            <div class="stat-value text-success">{{ gran_total_pago|peso }}</div>
+            <div class="stat-label">Total pendiente de pago</div>
         </div>
     </div>
 </div>
+
+<!-- Lista de empleados -->
+<div class="d-flex flex-column gap-3">
+    {% for r in resultados %}
+    <div class="empleado-card">
+        <div class="empleado-info">
+            <div class="empleado-avatar">{{ r.empleado__nombre|first }}</div>
+            <div>
+                <div class="empleado-nombre">{{ r.empleado__nombre }}</div>
+                <div class="empleado-meta">{{ r.total_pares|miles }} pares procesados</div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="empleado-pago">
+                <div class="empleado-pago-valor">{{ r.total_pago|peso }}</div>
+                <div class="empleado-pago-label">Pendiente</div>
+            </div>
+            <a href="{% url 'produccion:nomina_detalle' r.empleado__id %}" class="btn btn-sm btn-primary"><i class="bi bi-eye me-1"></i>Detalle</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
 {% else %}
 <div class="card border-0">
     <div class="card-body text-center py-5">
-        <i class="bi bi-check-circle text-muted" style="font-size:2.5rem"></i>
-        <p class="text-muted mt-2">No hay registros pendientes de pago.</p>
+        <i class="bi bi-check-circle text-success" style="font-size:3rem"></i>
+        <h5 class="mt-3 fw-semibold">Todo al día</h5>
+        <p class="text-muted">No hay registros pendientes de pago.</p>
     </div>
 </div>
 {% endif %}
