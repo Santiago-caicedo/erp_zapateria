@@ -11,7 +11,8 @@
       "Bash(ss:*)",
       "Bash(powershell.exe:*)",
       "Bash(cmd.exe:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(git remote:*)"
     ]
   }
 }
