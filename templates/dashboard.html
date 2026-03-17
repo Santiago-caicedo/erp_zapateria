@@ -7,107 +7,107 @@
 <!-- Tarjetas resumen -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 h-100">
+        <div class="card h-100" style="border-top:3px solid #111111">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(17,17,17,0.06)">
-                    <i class="bi bi-people fs-5" style="color:#111111"></i>
+                <div class="rounded d-flex align-items-center justify-content-center" style="width:44px;height:44px;background:#111111">
+                    <i class="bi bi-people text-white" style="font-size:1.1rem"></i>
                 </div>
                 <div>
-                    <div class="text-muted small fw-medium">Empleados</div>
-                    <div class="fw-bold fs-4">{{ total_empleados }}</div>
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)">Empleados</div>
+                    <div class="fw-bold" style="font-size:1.5rem;line-height:1.2">{{ total_empleados }}</div>
                 </div>
             </div>
-            <a href="{% url 'empleados:lista' %}" class="card-footer bg-transparent text-decoration-none text-muted small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border)">
-                Ver todos <i class="bi bi-arrow-right"></i>
+            <a href="{% url 'empleados:lista' %}" class="card-footer bg-transparent text-decoration-none small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border);color:var(--text-secondary);font-weight:600;font-size:0.72rem">
+                VER TODOS <i class="bi bi-arrow-right"></i>
             </a>
         </div>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 h-100">
+        <div class="card h-100" style="border-top:3px solid var(--gold-dark)">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(245,215,127,0.18)">
-                    <i class="bi bi-tag fs-5" style="color:#d4b85c"></i>
+                <div class="rounded d-flex align-items-center justify-content-center" style="width:44px;height:44px;background:var(--gold)">
+                    <i class="bi bi-tag" style="font-size:1.1rem;color:#111"></i>
                 </div>
                 <div>
-                    <div class="text-muted small fw-medium">Referencias</div>
-                    <div class="fw-bold fs-4">{{ total_referencias }}</div>
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)">Referencias</div>
+                    <div class="fw-bold" style="font-size:1.5rem;line-height:1.2">{{ total_referencias }}</div>
                 </div>
             </div>
-            <a href="{% url 'inventario:referencia_lista' %}" class="card-footer bg-transparent text-decoration-none text-muted small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border)">
-                Ver todos <i class="bi bi-arrow-right"></i>
+            <a href="{% url 'inventario:referencia_lista' %}" class="card-footer bg-transparent text-decoration-none small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border);color:var(--text-secondary);font-weight:600;font-size:0.72rem">
+                VER TODOS <i class="bi bi-arrow-right"></i>
             </a>
         </div>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 h-100">
+        <div class="card h-100" style="border-top:3px solid var(--nude)">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(216,195,181,0.2)">
-                    <i class="bi bi-person-vcard fs-5" style="color:#8a7f75"></i>
+                <div class="rounded d-flex align-items-center justify-content-center" style="width:44px;height:44px;background:var(--nude)">
+                    <i class="bi bi-person-vcard text-white" style="font-size:1.1rem"></i>
                 </div>
                 <div>
-                    <div class="text-muted small fw-medium">Clientes</div>
-                    <div class="fw-bold fs-4">{{ total_clientes }}</div>
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)">Clientes</div>
+                    <div class="fw-bold" style="font-size:1.5rem;line-height:1.2">{{ total_clientes }}</div>
                 </div>
             </div>
-            <a href="{% url 'produccion:cliente_lista' %}" class="card-footer bg-transparent text-decoration-none text-muted small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border)">
-                Ver todos <i class="bi bi-arrow-right"></i>
+            <a href="{% url 'produccion:cliente_lista' %}" class="card-footer bg-transparent text-decoration-none small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border);color:var(--text-secondary);font-weight:600;font-size:0.72rem">
+                VER TODOS <i class="bi bi-arrow-right"></i>
             </a>
         </div>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 h-100">
+        <div class="card h-100" style="border-top:3px solid #2d6a4f">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(232,195,200,0.2)">
-                    <i class="bi bi-clipboard2-check fs-5" style="color:#c9484e"></i>
+                <div class="rounded d-flex align-items-center justify-content-center" style="width:44px;height:44px;background:#2d6a4f">
+                    <i class="bi bi-clipboard2-check text-white" style="font-size:1.1rem"></i>
                 </div>
                 <div>
-                    <div class="text-muted small fw-medium">Ordenes</div>
-                    <div class="fw-bold fs-4">{{ total_ordenes }}</div>
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)">Ordenes</div>
+                    <div class="fw-bold" style="font-size:1.5rem;line-height:1.2">{{ total_ordenes }}</div>
                 </div>
             </div>
-            <a href="{% url 'produccion:orden_lista' %}" class="card-footer bg-transparent text-decoration-none text-muted small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border)">
-                Ver todos <i class="bi bi-arrow-right"></i>
+            <a href="{% url 'produccion:orden_lista' %}" class="card-footer bg-transparent text-decoration-none small d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border);color:var(--text-secondary);font-weight:600;font-size:0.72rem">
+                VER TODOS <i class="bi bi-arrow-right"></i>
             </a>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Estado de órdenes -->
+<div class="row g-3">
+    <!-- Estado de ordenes -->
     <div class="col-lg-4">
-        <div class="card border-0 h-100">
-            <div class="card-header bg-transparent">
-                <i class="bi bi-pie-chart me-1 text-muted"></i> Estado de Ordenes
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-1"></i> Estado de Ordenes
             </div>
             <div class="card-body d-flex flex-column gap-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#8a7f75"></span>
-                        <span>Pendientes</span>
+                        <span class="d-inline-block" style="width:10px;height:10px;border-radius:2px;background:var(--text-secondary)"></span>
+                        <span style="font-size:0.82rem">Pendientes</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.pendientes }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#111111"></span>
-                        <span>En Proceso</span>
+                        <span class="d-inline-block" style="width:10px;height:10px;border-radius:2px;background:#111111"></span>
+                        <span style="font-size:0.82rem">En Proceso</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.en_proceso }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#d4b85c"></span>
-                        <span>Finalizados</span>
+                        <span class="d-inline-block" style="width:10px;height:10px;border-radius:2px;background:#2d6a4f"></span>
+                        <span style="font-size:0.82rem">Finalizados</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.finalizados }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#D8C3B5"></span>
-                        <span>Entregados</span>
+                        <span class="d-inline-block" style="width:10px;height:10px;border-radius:2px;background:var(--gold-dark)"></span>
+                        <span style="font-size:0.82rem">Entregados</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.entregados }}</span>
                 </div>
@@ -115,11 +115,11 @@
         </div>
     </div>
 
-    <!-- Últimas órdenes -->
+    <!-- Ultimas ordenes -->
     <div class="col-lg-8">
-        <div class="card border-0 h-100">
-            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-clock-history me-1 text-muted"></i> Ultimas Ordenes</span>
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-1"></i> Ultimas Ordenes</span>
                 <a href="{% url 'produccion:orden_crear' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva</a>
             </div>
             <div class="card-body p-0">
@@ -137,11 +137,11 @@
                         <tbody>
                             {% for o in ultimas_ordenes %}
                             <tr>
-                                <td class="fw-semibold">{{ o.numero }}</td>
+                                <td class="fw-bold">{{ o.numero }}</td>
                                 <td>{{ o.cliente.nombre }}</td>
                                 <td>{{ o.fecha_entrega }}</td>
                                 <td>
-                                    <span class="badge {% if o.estado == 'Pendiente' %}bg-secondary{% elif o.estado == 'En Proceso' %}bg-primary{% elif o.estado == 'Finalizado' %}bg-success{% else %}bg-info{% endif %}">
+                                    <span class="badge {% if o.estado == 'Pendiente' %}bg-secondary{% elif o.estado == 'En Proceso' %}bg-dark{% elif o.estado == 'Finalizado' %}bg-success{% else %}bg-warning text-dark{% endif %}">
                                         {{ o.estado }}
                                     </span>
                                 </td>
@@ -158,10 +158,10 @@
     </div>
 </div>
 
-<!-- Accesos rápidos -->
-<div class="card border-0 mt-4">
-    <div class="card-header bg-transparent">
-        <i class="bi bi-lightning me-1 text-muted"></i> Accesos Rapidos
+<!-- Accesos rapidos -->
+<div class="card mt-3">
+    <div class="card-header">
+        <i class="bi bi-lightning me-1"></i> Accesos Rapidos
     </div>
     <div class="card-body d-flex flex-wrap gap-2">
         <a href="{% url 'empleados:crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Empleado</a>
