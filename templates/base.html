@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,18 +11,19 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         :root {
-            --sidebar-w: 270px;
+            --sidebar-w: 260px;
             --bg-body: #f4f6fb;
             --bg-card: #ffffff;
-            --bg-sidebar: #0f1117;
-            --bg-sidebar-hover: rgba(255,255,255,0.06);
-            --bg-sidebar-active: rgba(99,130,255,0.15);
-            --text-sidebar: #7a8299;
-            --text-sidebar-active: #ffffff;
+            --bg-sidebar: #ffffff;
+            --bg-sidebar-hover: #f0f2f8;
+            --bg-sidebar-active: rgba(79,110,247,0.08);
+            --text-sidebar: #5a607a;
+            --text-sidebar-active: #4f6ef7;
             --accent: #4f6ef7;
             --accent-hover: #3b5de7;
             --accent-soft: rgba(79,110,247,0.1);
             --border: #e2e6ef;
+            --border-sidebar: #eceef5;
             --text-primary: #1a1f36;
             --text-secondary: #6b7394;
             --radius-sm: 8px;
@@ -57,48 +59,28 @@
             overflow-x: hidden;
             z-index: 1040;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid rgba(255,255,255,0.04);
+            border-right: 1px solid var(--border-sidebar);
         }
 
         .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 4px; }
 
         .sidebar-brand {
-            padding: 1.5rem 1.5rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .sidebar-brand-icon {
-            width: 38px; height: 38px;
-            background: linear-gradient(135deg, var(--accent), #8b5cf6);
-            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-size: 1.15rem;
-            flex-shrink: 0;
         }
 
-        .sidebar-brand-text h5 {
-            color: #fff;
-            margin: 0;
-            font-weight: 700;
-            font-size: 1rem;
-            letter-spacing: -0.01em;
-        }
-
-        .sidebar-brand-text small {
-            color: var(--text-sidebar);
-            font-size: 0.7rem;
-            font-weight: 500;
+        .sidebar-brand img {
+            height: 44px;
+            width: auto;
+            object-fit: contain;
         }
 
         .sidebar-divider {
             height: 1px;
-            background: rgba(255,255,255,0.06);
+            background: var(--border-sidebar);
             margin: 0.25rem 1.25rem 0.5rem;
         }
 
@@ -108,7 +90,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: #3d4463;
+            color: #9ca3bf;
         }
 
         .sidebar-nav {
@@ -132,13 +114,14 @@
         }
 
         .sidebar-nav li a:hover {
-            color: #c0c8e0;
+            color: var(--text-primary);
             background: var(--bg-sidebar-hover);
         }
 
         .sidebar-nav li a.active {
             color: var(--text-sidebar-active);
             background: var(--bg-sidebar-active);
+            font-weight: 600;
         }
 
         .sidebar-nav li a.active::before {
@@ -157,11 +140,16 @@
             font-size: 1.1rem;
             width: 1.3rem;
             text-align: center;
-            opacity: 0.7;
+            opacity: 0.55;
+        }
+
+        .sidebar-nav li a:hover i {
+            opacity: 0.8;
         }
 
         .sidebar-nav li a.active i {
             opacity: 1;
+            color: var(--accent);
         }
 
         /* ═══════════════════════════════
@@ -597,11 +585,7 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <div class="sidebar-brand-icon"><i class="bi bi-shop"></i></div>
-            <div class="sidebar-brand-text">
-                <h5>ERP Zapatería</h5>
-                <small>Sistema de Gestión</small>
-            </div>
+            <img src="{% static 'img/logo.png' %}" alt="Revelle">
         </div>
 
         <div class="sidebar-divider"></div>
@@ -624,15 +608,15 @@
             <li><a href="{% url 'inventario:referencia_lista' %}" class="{% if 'referencia' in request.resolver_match.url_name|default:'' or 'consumo' in request.resolver_match.url_name|default:'' or 'proceso_ref' in request.resolver_match.url_name|default:'' %}active{% endif %}"><i class="bi bi-tags-fill"></i> Referencias</a></li>
         </ul>
 
-        <div class="sidebar-section">Producción</div>
+        <div class="sidebar-section">Produccion</div>
         <ul class="sidebar-nav">
-            <li><a href="{% url 'produccion:orden_lista' %}" class="{% if 'orden' in request.resolver_match.url_name|default:'' %}active{% endif %}"><i class="bi bi-clipboard2-check-fill"></i> Órdenes</a></li>
+            <li><a href="{% url 'produccion:orden_lista' %}" class="{% if 'orden' in request.resolver_match.url_name|default:'' %}active{% endif %}"><i class="bi bi-clipboard2-check-fill"></i> Ordenes</a></li>
             <li><a href="{% url 'produccion:registro_trabajo' %}" class="{% if request.resolver_match.url_name|default:'' == 'registro_trabajo' %}active{% endif %}"><i class="bi bi-hammer"></i> Registrar Trabajo</a></li>
         </ul>
 
         <div class="sidebar-section">Reportes</div>
         <ul class="sidebar-nav">
-            <li><a href="{% url 'produccion:nomina' %}" class="{% if 'nomina' in request.resolver_match.url_name|default:'' %}active{% endif %}"><i class="bi bi-cash-stack"></i> Nómina</a></li>
+            <li><a href="{% url 'produccion:nomina' %}" class="{% if 'nomina' in request.resolver_match.url_name|default:'' %}active{% endif %}"><i class="bi bi-cash-stack"></i> Nomina</a></li>
         </ul>
     </aside>
 
@@ -641,6 +625,17 @@
             <div class="d-flex align-items-center gap-3">
                 <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
                 <span class="page-title">{% block page_title %}{% endblock %}</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span style="font-size:0.82rem;color:var(--text-secondary)">
+                    <i class="bi bi-person-circle me-1"></i>{{ user.get_full_name|default:user.username }}
+                </span>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.78rem;">
+                        <i class="bi bi-box-arrow-right me-1"></i>Salir
+                    </button>
+                </form>
             </div>
         </div>
 

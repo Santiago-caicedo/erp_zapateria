@@ -12,7 +12,9 @@
       "Bash(powershell.exe:*)",
       "Bash(cmd.exe:*)",
       "Bash(sed:*)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "WebSearch",
+      "Bash(find:*)"
     ]
   }
 }

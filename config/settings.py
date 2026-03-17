@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -120,10 +121,49 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static files & Media
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+if DEBUG:
+    # ── DESARROLLO (archivos locales) ──
+    STATIC_URL = '/static/'
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
+    STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
+else:
+    # ── PRODUCCIÓN (AWS S3) ──
+    from storages.backends.s3boto3 import S3Boto3Storage
+
+    AWS_STORAGE_BUCKET_NAME = 'vadomdata'
+    AWS_S3_REGION_NAME = 'us-east-1'
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    AWS_DEFAULT_ACL = None
+
+    S3_PREFIX = config('S3_CLIENT_PREFIX', default='default_prefix')
+
+    class StaticStorage(S3Boto3Storage):
+        location = f'{S3_PREFIX}/static'
+        default_acl = None
+
+    class MediaStorage(S3Boto3Storage):
+        location = f'{S3_PREFIX}/media'
+        default_acl = None
+
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{S3_PREFIX}/static/'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{S3_PREFIX}/media/'
+
+    STORAGES = {
+        'default': {'BACKEND': 'config.settings.MediaStorage'},
+        'staticfiles': {'BACKEND': 'config.settings.StaticStorage'},
+    }
+
+# Autenticación
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'

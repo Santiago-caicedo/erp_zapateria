@@ -7,12 +7,12 @@
 <style>
     .stat-card {
         border: none;
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
         overflow: hidden;
         transition: var(--transition);
     }
-    .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .stat-card:hover { box-shadow: var(--shadow-card); transform: translateY(-2px); }
     .stat-card .stat-icon {
         width: 44px; height: 44px;
         border-radius: 10px;
@@ -27,12 +27,12 @@
 
     .tipo-card {
         border: 1px solid var(--border);
-        border-radius: var(--radius-md);
+        border-radius: var(--radius);
         overflow: hidden;
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--shadow-card);
         transition: var(--transition);
     }
-    .tipo-card:hover { box-shadow: var(--shadow-md); }
+    .tipo-card:hover { box-shadow: var(--shadow-card); }
     .tipo-card-header {
         padding: 1rem 1.25rem;
         background: linear-gradient(135deg, rgba(79,110,247,0.04), rgba(139,92,246,0.04));
@@ -146,7 +146,7 @@
     <div class="col-6 col-lg-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="stat-icon" style="background:linear-gradient(135deg,#4f6ef7,#6c8cff); color:#fff"><i class="bi bi-box-seam-fill"></i></div>
+                <div class="stat-icon" style="background:linear-gradient(135deg,#4f6ef7,#6c8cff); color:#fff"><i class="bi bi-box-seam"></i></div>
                 <div>
                     <div class="stat-value">{{ total_materiales }}</div>
                     <div class="stat-label">Materiales</div>
@@ -157,7 +157,7 @@
     <div class="col-6 col-lg-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa); color:#fff"><i class="bi bi-collection-fill"></i></div>
+                <div class="stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa); color:#fff"><i class="bi bi-collection"></i></div>
                 <div>
                     <div class="stat-value">{{ total_tipos }}</div>
                     <div class="stat-label">Categorías</div>
@@ -168,7 +168,7 @@
     <div class="col-6 col-lg-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#fff"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#fff"><i class="bi bi-exclamation-triangle"></i></div>
                 <div>
                     <div class="stat-value">{{ stock_bajo }}</div>
                     <div class="stat-label">Stock Bajo</div>
@@ -179,7 +179,7 @@
     <div class="col-6 col-lg-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="stat-icon" style="background:linear-gradient(135deg,#ef4444,#f87171); color:#fff"><i class="bi bi-x-circle-fill"></i></div>
+                <div class="stat-icon" style="background:linear-gradient(135deg,#ef4444,#f87171); color:#fff"><i class="bi bi-x-circle"></i></div>
                 <div>
                     <div class="stat-value">{{ sin_stock }}</div>
                     <div class="stat-label">Sin Stock</div>
@@ -202,7 +202,7 @@
         <div class="tipo-card">
             <div class="tipo-card-header">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="tipo-icon" style="background:var(--accent-soft); color:var(--accent)"><i class="bi bi-collection-fill"></i></div>
+                    <div class="tipo-icon" style="background:var(--accent-soft); color:var(--accent)"><i class="bi bi-collection"></i></div>
                     <h6>{{ tipo.nombre }}</h6>
                 </div>
                 <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:0.7rem">{{ tipo.materiales.count }} items</span>
