@@ -216,11 +216,11 @@
                     </div>
                     <div>
                         {% if m.cantidad_stock <= 0 %}
-                            <span class="stock-badge stock-out"><i class="bi bi-x-circle-fill"></i> 0</span>
+                            <span class="stock-badge stock-out"><i class="bi bi-x-circle"></i> 0</span>
                         {% elif m.cantidad_stock <= 10 %}
-                            <span class="stock-badge stock-low"><i class="bi bi-exclamation-triangle-fill"></i> {{ m.cantidad_stock }}</span>
+                            <span class="stock-badge stock-low"><i class="bi bi-exclamation-triangle"></i> {{ m.cantidad_stock }}</span>
                         {% else %}
-                            <span class="stock-badge stock-ok"><i class="bi bi-check-circle-fill"></i> {{ m.cantidad_stock }}</span>
+                            <span class="stock-badge stock-ok"><i class="bi bi-check-circle"></i> {{ m.cantidad_stock }}</span>
                         {% endif %}
                     </div>
                     <div class="material-actions">

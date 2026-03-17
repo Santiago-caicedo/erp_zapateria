@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block titulo %}Dashboard - ERP Zapatería{% endblock %}
+{% block titulo %}Dashboard - Revelle{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
 {% block contenido %}
@@ -9,8 +9,8 @@
     <div class="col-sm-6 col-xl-3">
         <div class="card border-0 h-100">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:linear-gradient(135deg,#4f6ef7,#6c8cff)">
-                    <i class="bi bi-people-fill text-white fs-5"></i>
+                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(17,17,17,0.06)">
+                    <i class="bi bi-people fs-5" style="color:#111111"></i>
                 </div>
                 <div>
                     <div class="text-muted small fw-medium">Empleados</div>
@@ -26,8 +26,8 @@
     <div class="col-sm-6 col-xl-3">
         <div class="card border-0 h-100">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:linear-gradient(135deg,#10b981,#34d399)">
-                    <i class="bi bi-tags-fill text-white fs-5"></i>
+                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(245,215,127,0.18)">
+                    <i class="bi bi-tag fs-5" style="color:#d4b85c"></i>
                 </div>
                 <div>
                     <div class="text-muted small fw-medium">Referencias</div>
@@ -43,8 +43,8 @@
     <div class="col-sm-6 col-xl-3">
         <div class="card border-0 h-100">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:linear-gradient(135deg,#f59e0b,#fbbf24)">
-                    <i class="bi bi-person-vcard-fill text-white fs-5"></i>
+                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(216,195,181,0.2)">
+                    <i class="bi bi-person-vcard fs-5" style="color:#8a7f75"></i>
                 </div>
                 <div>
                     <div class="text-muted small fw-medium">Clientes</div>
@@ -60,11 +60,11 @@
     <div class="col-sm-6 col-xl-3">
         <div class="card border-0 h-100">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:linear-gradient(135deg,#8b5cf6,#a78bfa)">
-                    <i class="bi bi-clipboard2-check-fill text-white fs-5"></i>
+                <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(232,195,200,0.2)">
+                    <i class="bi bi-clipboard2-check fs-5" style="color:#c9484e"></i>
                 </div>
                 <div>
-                    <div class="text-muted small fw-medium">Órdenes</div>
+                    <div class="text-muted small fw-medium">Ordenes</div>
                     <div class="fw-bold fs-4">{{ total_ordenes }}</div>
                 </div>
             </div>
@@ -80,33 +80,33 @@
     <div class="col-lg-4">
         <div class="card border-0 h-100">
             <div class="card-header bg-transparent">
-                <i class="bi bi-pie-chart-fill me-1 text-muted"></i> Estado de Órdenes
+                <i class="bi bi-pie-chart me-1 text-muted"></i> Estado de Ordenes
             </div>
             <div class="card-body d-flex flex-column gap-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#6b7280"></span>
+                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#8a7f75"></span>
                         <span>Pendientes</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.pendientes }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#4f6ef7"></span>
+                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#111111"></span>
                         <span>En Proceso</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.en_proceso }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#10b981"></span>
+                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#d4b85c"></span>
                         <span>Finalizados</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.finalizados }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#06b6d4"></span>
+                        <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#D8C3B5"></span>
                         <span>Entregados</span>
                     </div>
                     <span class="fw-bold">{{ ordenes_por_estado.entregados }}</span>
@@ -119,7 +119,7 @@
     <div class="col-lg-8">
         <div class="card border-0 h-100">
             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-clock-history me-1 text-muted"></i> Últimas Órdenes</span>
+                <span><i class="bi bi-clock-history me-1 text-muted"></i> Ultimas Ordenes</span>
                 <a href="{% url 'produccion:orden_crear' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva</a>
             </div>
             <div class="card-body p-0">
@@ -148,7 +148,7 @@
                                 <td><a href="{% url 'produccion:orden_detalle' o.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a></td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="5" class="text-center text-muted py-4">No hay órdenes aún.</td></tr>
+                            <tr><td colspan="5" class="text-center text-muted py-4">No hay ordenes aun.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -161,7 +161,7 @@
 <!-- Accesos rápidos -->
 <div class="card border-0 mt-4">
     <div class="card-header bg-transparent">
-        <i class="bi bi-lightning-fill me-1 text-muted"></i> Accesos Rápidos
+        <i class="bi bi-lightning me-1 text-muted"></i> Accesos Rapidos
     </div>
     <div class="card-body d-flex flex-wrap gap-2">
         <a href="{% url 'empleados:crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Empleado</a>
@@ -169,7 +169,7 @@
         <a href="{% url 'inventario:referencia_crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Referencia</a>
         <a href="{% url 'produccion:cliente_crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Cliente</a>
         <a href="{% url 'produccion:orden_crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Orden</a>
-        <a href="{% url 'produccion:nomina' %}" class="btn btn-secondary"><i class="bi bi-cash-stack me-1"></i>Nómina</a>
+        <a href="{% url 'produccion:nomina' %}" class="btn btn-secondary"><i class="bi bi-wallet2 me-1"></i>Nomina</a>
     </div>
 </div>
 {% endblock %}
