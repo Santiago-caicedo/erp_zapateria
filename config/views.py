@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import logout as auth_logout
 from django.db.models import Count, Sum, F, Q
 from empleados.models import Empleado
 from inventario.models import Material, ProcesoBase, Referencia
@@ -29,3 +30,8 @@ def dashboard(request):
         'ultimas_ordenes': ultimas_ordenes,
     }
     return render(request, 'dashboard.html', context)
+
+
+def cerrar_sesion(request):
+    auth_logout(request)
+    return redirect('login')

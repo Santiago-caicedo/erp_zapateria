@@ -15,7 +15,7 @@ class LoginRequiredMiddleware:
         if not request.user.is_authenticated:
             path = request.path_info
             # Permitir acceso a la página de login y al admin
-            exempt_urls = [settings.LOGIN_URL, '/admin/']
+            exempt_urls = [settings.LOGIN_URL, '/logout/', '/admin/']
             if not any(path.startswith(url) for url in exempt_urls):
                 return redirect(f'{settings.LOGIN_URL}?next={path}')
         return self.get_response(request)
