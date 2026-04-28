@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Sum, F, Q
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
@@ -13,7 +13,7 @@ from weasyprint import HTML
 from .models import Cliente, OrdenProduccion, RegistroTrabajo
 from .forms import ClienteForm, OrdenProduccionForm, OrdenEditarForm, RegistroTrabajoForm
 from empleados.models import Empleado
-from inventario.models import Referencia
+from inventario.models import Material, Referencia
 
 
 def _fmt_peso(valor):
@@ -40,6 +40,16 @@ def _verificar_orden_pagada(orden):
     if total_registros > 0 and pagados >= total_registros and orden.estado != 'Pagado':
         orden.estado = 'Pagado'
         orden.save(update_fields=['estado', 'fecha_pagado'])
+
+
+def _descontar_materiales(orden):
+    """Resta del stock los materiales consumidos por la orden (una sola vez)."""
+    consumos = orden.referencia.consumos.select_related('material').all()
+    for c in consumos:
+        cantidad_total = c.cantidad_consumida * orden.cantidad_total
+        Material.objects.filter(pk=c.material_id).update(
+            cantidad_stock=F('cantidad_stock') - cantidad_total
+        )
 
 
 # ─── Cliente ───
@@ -314,12 +324,22 @@ def registro_agregar(request, orden_pk):
     if request.method == 'POST':
         form = RegistroTrabajoForm(request.POST)
         if form.is_valid():
-            registro = form.save(commit=False)
-            registro.orden = orden
-            registro.cantidad_realizada = orden.cantidad_total
-            registro.save()
+            descontado_ahora = False
+            with transaction.atomic():
+                registro = form.save(commit=False)
+                registro.orden = orden
+                registro.cantidad_realizada = orden.cantidad_total
+                registro.save()
+                if not orden.materiales_descontados:
+                    _descontar_materiales(orden)
+                    orden.materiales_descontados = True
+                    orden.save(update_fields=['materiales_descontados'])
+                    descontado_ahora = True
             _verificar_orden_finalizada(orden)
-            messages.success(request, 'Registro de trabajo guardado.')
+            if descontado_ahora:
+                messages.success(request, 'Registro guardado. Stock de materiales descontado.')
+            else:
+                messages.success(request, 'Registro de trabajo guardado.')
             return redirect('produccion:orden_detalle', pk=orden.pk)
     else:
         form = RegistroTrabajoForm()
@@ -359,6 +379,7 @@ def registro_trabajo(request):
 
         empleado = get_object_or_404(Empleado, pk=empleado_id)
         registros_creados = 0
+        ordenes_descontadas = 0
         errores = []
 
         for linea in lineas:
@@ -377,12 +398,18 @@ def registro_trabajo(request):
                 continue
 
             try:
-                RegistroTrabajo.objects.create(
-                    empleado=empleado,
-                    orden=orden,
-                    proceso_referencia=proceso_ref,
-                    cantidad_realizada=cantidad,
-                )
+                with transaction.atomic():
+                    RegistroTrabajo.objects.create(
+                        empleado=empleado,
+                        orden=orden,
+                        proceso_referencia=proceso_ref,
+                        cantidad_realizada=cantidad,
+                    )
+                    if not orden.materiales_descontados:
+                        _descontar_materiales(orden)
+                        orden.materiales_descontados = True
+                        orden.save(update_fields=['materiales_descontados'])
+                        ordenes_descontadas += 1
                 registros_creados += 1
             except IntegrityError:
                 errores.append(f'Orden #{orden.numero} - {proceso_ref.proceso_base.nombre}: ya registrado.')
@@ -400,6 +427,8 @@ def registro_trabajo(request):
             return JsonResponse({'ok': False, 'error': ' | '.join(errores)}, status=400)
 
         mensaje = f'Se registraron {registros_creados} trabajos para {empleado.nombre}.'
+        if ordenes_descontadas:
+            mensaje += f' Stock descontado en {ordenes_descontadas} orden{"es" if ordenes_descontadas != 1 else ""}.'
         if errores:
             mensaje += f' ({len(errores)} omitidos por duplicado)'
 

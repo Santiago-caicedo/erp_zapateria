@@ -48,6 +48,11 @@ class OrdenProduccion(models.Model):
     talla_40 = models.PositiveIntegerField(default=0, verbose_name="Talla 40")
     talla_41 = models.PositiveIntegerField(default=0, verbose_name="Talla 41")
 
+    # Marca si ya se restó del inventario el material consumido por esta orden.
+    # Se pone en True al crear el primer RegistroTrabajo, para no descontar
+    # de nuevo cuando se registren los procesos siguientes de la misma orden.
+    materiales_descontados = models.BooleanField(default=False, verbose_name="Materiales Descontados")
+
     @property
     def cantidad_total(self):
         return (
