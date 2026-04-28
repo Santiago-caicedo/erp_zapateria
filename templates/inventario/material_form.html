@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load l10n %}
 
 {% block titulo %}{{ titulo }}{% endblock %}
 {% block page_title %}{{ titulo }}{% endblock %}
@@ -37,7 +38,7 @@
             <div class="form-group">
                 <label for="id_cantidad_stock">Cantidad en Stock</label>
                 <input type="number" step="0.01" name="cantidad_stock" id="id_cantidad_stock"
-                       value="{{ form.cantidad_stock.value|default:'0' }}"
+                       value="{{ form.cantidad_stock.value|default:'0'|unlocalize }}"
                        class="form-control {% if form.cantidad_stock.errors %}is-invalid{% endif %}"
                        placeholder="0.00">
                 {% if form.cantidad_stock.errors %}<div class="invalid-feedback">{{ form.cantidad_stock.errors.0 }}</div>{% endif %}

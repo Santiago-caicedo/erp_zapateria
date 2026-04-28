@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load l10n %}
 
 {% block titulo %}{{ titulo }}{% endblock %}
 {% block page_title %}{{ titulo }}{% endblock %}
@@ -20,7 +21,7 @@
             <div class="form-group">
                 <label for="id_precio_mano_obra">Precio Mano de Obra</label>
                 <input type="number" step="0.01" name="precio_mano_obra" id="id_precio_mano_obra"
-                       value="{{ form.precio_mano_obra.value|default:'' }}"
+                       value="{{ form.precio_mano_obra.value|default:''|unlocalize }}"
                        class="form-control {% if form.precio_mano_obra.errors %}is-invalid{% endif %}"
                        placeholder="0.00" required>
                 {% if form.precio_mano_obra.errors %}<div class="invalid-feedback">{{ form.precio_mano_obra.errors.0 }}</div>{% endif %}

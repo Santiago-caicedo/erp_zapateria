@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertical Hybrid Energy System PFD</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .pfd-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Contenedor de las columnas verticales */
+        .columns-wrapper {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: flex-end; /* Alinea todo abajo antes de tocar la red */
+            margin-bottom: 15px;
+        }
+        
+        .column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .box {
+            padding: 12px 8px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px solid;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .arrow-down {
+            font-size: 22px;
+            color: #adb5bd;
+            margin: 4px 0;
+            font-weight: bold;
+        }
+
+        /* Colores por tipo de energía */
+        .hydro .box { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+        .nuclear .box { background-color: #fef9c3; color: #854d0e; border-color: #fde047; }
+        .thermal .box { background-color: #fae8ff; color: #86198f; border-color: #f0abfc; }
+        .solar .box { background-color: #fef3c7; color: #b45309; border-color: #fcd34d; }
+        .wind .box { background-color: #d1fae5; color: #047857; border-color: #6ee7b7; }
+        .backup .box { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+        .math-note {
+            display: block;
+            font-size: 0.8em;
+            font-weight: normal;
+            margin-top: 4px;
+            font-family: monospace;
+            color: #7f1d1d;
+        }
+
+        /* Barra de la Red Eléctrica (SIN) */
+        .grid-bus {
+            background-color: #28a745;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            position: relative;
+        }
+
+        /* Panel de Lógica */
+        .logic-panel {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #495057;
+            margin-top: 25px;
+        }
+        .logic-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #343a40;
+            font-size: 1.1em;
+        }
+        .logic-item {
+            font-size: 0.9em;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pfd-container">
+        
+        <div class="columns-wrapper">
+            
+            <div class="column hydro">
+                <div class="box">Hydropower</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Reservoir</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Hydraulic<br>Turbine</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Generator</div><div class="arrow-down">&#11015;</div>
+            </div>
+
+            <div class="column nuclear">
+                <div class="box">Nuclear</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Fission<br>Reactor</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Steam</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Turbine</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Generator</div><div class="arrow-down">&#11015;</div>
+            </div>
+
+            <div class="column thermal">
+                <div class="box">Thermal<br><span style="font-weight:normal;font-size:0.85em;">(Gas/Biofuels)</span></div><div class="arrow-down">&#11015;</div>
+                <div class="box">Combustion</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Turbine</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Generator</div><div class="arrow-down">&#11015;</div>
+            </div>
+
+            <div class="column solar">
+                <div class="box">Solar</div><div class="arrow-down">&#11015;</div>
+                <div class="box">PV Panel</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Inverter</div><div class="arrow-down">&#11015;</div>
+            </div>
+
+            <div class="column wind">
+                <div class="box">Wind</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Wind Turbine</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Generator</div><div class="arrow-down">&#11015;</div>
+            </div>
+
+            <div class="column backup">
+                <div class="box">Backup<br><span style="font-weight:normal;font-size:0.85em;">(Coal/Oil)</span>
+                    <span class="math-note">Re &lt; 2000</span>
+                </div><div class="arrow-down">&#11015;</div>
+                <div class="box">Combustion</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Turbine</div><div class="arrow-down">&#11015;</div>
+                <div class="box">Generator</div><div class="arrow-down">&#11015;</div>
+            </div>
+
+        </div>
+
+        <div class="grid-bus">
+            National Interconnected System (SIN) / Grid
+        </div>
+
+        <div class="logic-panel">
+            <div class="logic-title">🔄 System Logic & Integration Strategy</div>
+            <div class="logic-item"><strong>Renewables (Solar/Wind):</strong> Reduce the load on thermal generation, saving fossil fuels.</div>
+            <div class="logic-item"><strong>Hydropower:</strong> Regulates grid variations and acts as the system's main axis.</div>
+            <div class="logic-item"><strong>Thermal & Backup:</strong> Activates when national demand increases or hydropower drops (El Niño).</div>
+            <div class="logic-item"><strong>Nuclear:</strong> Proposed modern reactor for 24/7 continuous baseload generation.</div>
+        </div>
+
+    </div>
+
+</body>
+</html>

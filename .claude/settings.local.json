@@ -14,7 +14,10 @@
       "Bash(sed:*)",
       "Bash(git remote:*)",
       "WebSearch",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(venv/bin/python -c ' *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

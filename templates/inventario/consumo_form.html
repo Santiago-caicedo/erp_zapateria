@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load l10n %}
 
 {% block titulo %}{{ titulo }}{% endblock %}
 {% block page_title %}{{ titulo }}{% endblock %}
@@ -20,7 +21,7 @@
             <div class="form-group">
                 <label for="id_cantidad_consumida">Cantidad Consumida</label>
                 <input type="number" step="0.01" name="cantidad_consumida" id="id_cantidad_consumida"
-                       value="{{ form.cantidad_consumida.value|default:'' }}"
+                       value="{{ form.cantidad_consumida.value|default:''|unlocalize }}"
                        class="form-control {% if form.cantidad_consumida.errors %}is-invalid{% endif %}"
                        placeholder="0.00" required>
                 {% if form.cantidad_consumida.errors %}<div class="invalid-feedback">{{ form.cantidad_consumida.errors.0 }}</div>{% endif %}

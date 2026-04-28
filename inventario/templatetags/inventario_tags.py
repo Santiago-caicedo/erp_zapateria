@@ -24,10 +24,11 @@ def get_precio_value(form, proceso_pk):
     # Si el form fue enviado con errores, mostrar lo que el usuario puso
     if form.is_bound:
         return form.data.get(field_name, '')
-    # Si no, mostrar el initial
+    # Si no, mostrar el initial. str(Decimal) usa siempre punto decimal
+    # para que <input type="number"> lo acepte (sin localización es-co).
     field = form.fields.get(field_name)
-    if field and field.initial:
-        return field.initial
+    if field and field.initial not in (None, ''):
+        return str(field.initial)
     return ''
 
 
@@ -59,9 +60,11 @@ def get_mat_cantidad(form, mat_pk):
     field_name = f'mat_{mat_pk}_cantidad'
     if form.is_bound:
         return form.data.get(field_name, '')
+    # str(Decimal) usa siempre punto decimal para que <input type="number">
+    # lo acepte (sin localización es-co).
     field = form.fields.get(field_name)
-    if field and field.initial:
-        return field.initial
+    if field and field.initial not in (None, ''):
+        return str(field.initial)
     return ''
 
 
