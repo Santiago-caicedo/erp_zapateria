@@ -96,7 +96,14 @@
                     <tr>
                         <td class="fw-bold">{{ o.numero }}</td>
                         <td>
-                            <a href="{% url 'produccion:orden_detalle' o.pk %}" class="text-decoration-none fw-semibold">
+                            <a href="{% url 'produccion:orden_detalle' o.pk %}" class="text-decoration-none fw-semibold d-inline-flex align-items-center gap-2">
+                                {% if o.referencia.imagen %}
+                                    <img src="{{ o.referencia.imagen.url }}" alt="{{ o.referencia.codigo }}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
+                                {% else %}
+                                    <span style="width:36px;height:36px;background:var(--bg-body);border:1px solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </span>
+                                {% endif %}
                                 {{ o.referencia.codigo }}
                             </a>
                         </td>

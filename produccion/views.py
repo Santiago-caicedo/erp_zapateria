@@ -263,15 +263,20 @@ def orden_pdf(request, pk):
             fila.append(procesos_lista[i + 1])
         procesos_pares.append(fila)
 
-    # Convertir imagen a data URI para WeasyPrint
+    # Convertir imagen a data URI para WeasyPrint.
+    # Usamos imagen.open() (no .path) para que funcione tanto con
+    # FileSystemStorage local como con S3 en producción.
     imagen_uri = ''
     if orden.referencia.imagen:
         try:
-            img_path = orden.referencia.imagen.path
-            with open(img_path, 'rb') as f:
+            with orden.referencia.imagen.open('rb') as f:
                 img_data = base64.b64encode(f.read()).decode()
-            ext = img_path.rsplit('.', 1)[-1].lower()
-            mime = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp'}.get(ext, 'image/jpeg')
+            nombre = orden.referencia.imagen.name
+            ext = nombre.rsplit('.', 1)[-1].lower() if '.' in nombre else 'jpg'
+            mime = {
+                'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
+                'png': 'image/png', 'webp': 'image/webp', 'gif': 'image/gif',
+            }.get(ext, 'image/jpeg')
             imagen_uri = f'data:{mime};base64,{img_data}'
         except Exception:
             imagen_uri = ''

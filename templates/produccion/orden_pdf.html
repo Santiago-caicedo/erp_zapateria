@@ -237,7 +237,7 @@
                 <span class="value">{{ fecha_generacion }}</span>
             </td>
             <td rowspan="2" style="width:110px; text-align:center; vertical-align:middle;">
-                {% if orden.referencia.imagen %}
+                {% if imagen_uri %}
                     <img src="{{ imagen_uri }}" class="ref-image" alt="{{ orden.referencia.codigo }}">
                 {% else %}
                     <div class="ref-image-placeholder">SIN IMAGEN</div>
