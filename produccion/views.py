@@ -191,7 +191,7 @@ def orden_detalle(request, pk):
         })
 
     tallas = []
-    for t in range(34, 41):
+    for t in range(34, 42):
         val = getattr(orden, f'talla_{t}')
         if val > 0:
             tallas.append({'numero': t, 'cantidad': val})
@@ -250,7 +250,7 @@ def orden_pdf(request, pk):
         })
 
     tallas = []
-    for t in range(34, 41):
+    for t in range(34, 42):
         val = getattr(orden, f'talla_{t}')
         tallas.append({'numero': t, 'cantidad': val})
 

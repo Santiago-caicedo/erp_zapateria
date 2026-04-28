@@ -14,7 +14,7 @@ class OrdenProduccionForm(forms.ModelForm):
         fields = [
             'cliente', 'referencia',
             'talla_34', 'talla_35', 'talla_36', 'talla_37',
-            'talla_38', 'talla_39', 'talla_40',
+            'talla_38', 'talla_39', 'talla_40', 'talla_41',
         ]
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-select'}),
@@ -26,13 +26,14 @@ class OrdenProduccionForm(forms.ModelForm):
             'talla_38': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0', 'value': '0'}),
             'talla_39': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0', 'value': '0'}),
             'talla_40': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0', 'value': '0'}),
+            'talla_41': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0', 'value': '0'}),
         }
 
     def clean(self):
         cleaned = super().clean()
         total = sum(
             cleaned.get(f'talla_{t}', 0) or 0
-            for t in range(34, 41)
+            for t in range(34, 42)
         )
         if total == 0:
             raise forms.ValidationError('Debes indicar al menos una talla con cantidad mayor a 0.')
@@ -45,7 +46,7 @@ class OrdenEditarForm(forms.ModelForm):
         fields = [
             'cliente', 'referencia', 'estado',
             'talla_34', 'talla_35', 'talla_36', 'talla_37',
-            'talla_38', 'talla_39', 'talla_40',
+            'talla_38', 'talla_39', 'talla_40', 'talla_41',
         ]
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-select'}),
@@ -58,6 +59,7 @@ class OrdenEditarForm(forms.ModelForm):
             'talla_38': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0'}),
             'talla_39': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0'}),
             'talla_40': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0'}),
+            'talla_41': forms.NumberInput(attrs={'class': 'form-control talla-input', 'min': '0'}),
         }
 
 

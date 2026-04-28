@@ -46,12 +46,14 @@ class OrdenProduccion(models.Model):
     talla_38 = models.PositiveIntegerField(default=0, verbose_name="Talla 38")
     talla_39 = models.PositiveIntegerField(default=0, verbose_name="Talla 39")
     talla_40 = models.PositiveIntegerField(default=0, verbose_name="Talla 40")
+    talla_41 = models.PositiveIntegerField(default=0, verbose_name="Talla 41")
 
     @property
     def cantidad_total(self):
         return (
             self.talla_34 + self.talla_35 + self.talla_36 +
-            self.talla_37 + self.talla_38 + self.talla_39 + self.talla_40
+            self.talla_37 + self.talla_38 + self.talla_39 + self.talla_40 +
+            self.talla_41
         )
 
     ESTADO_FECHA_MAP = {
