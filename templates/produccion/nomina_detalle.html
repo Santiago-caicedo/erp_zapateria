@@ -71,6 +71,8 @@
 </div>
 
 {% if ordenes_agrupadas %}
+<form method="post" id="formPago" action="{% url 'produccion:nomina_marcar_pagado' empleado.pk %}">
+    {% csrf_token %}
 <!-- Header con resumen -->
 <div class="nomina-header-card">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -78,9 +80,13 @@
             <div class="empleado-nombre">{{ empleado.nombre }}</div>
             <div class="empleado-doc"><i class="bi bi-person-badge me-1"></i>{{ empleado.documento }} &middot; {{ empleado.rol }}</div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 align-items-center">
+            <div class="form-check me-2" style="color:#fff">
+                <input class="form-check-input" type="checkbox" id="chkSeleccionarTodos">
+                <label class="form-check-label small" for="chkSeleccionarTodos">Seleccionar todos</label>
+            </div>
             <a href="{% url 'produccion:nomina_pdf' empleado.pk %}" class="btn btn-sm btn-light" target="_blank"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
-            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalPagar"><i class="bi bi-check2-all me-1"></i>Marcar Pagado</button>
+            <button type="button" class="btn btn-sm btn-warning" id="btnAbrirModal" data-bs-toggle="modal" data-bs-target="#modalPagar" disabled><i class="bi bi-check2-all me-1"></i>Pagar seleccionados</button>
         </div>
     </div>
     <div class="nomina-summary">
@@ -95,6 +101,10 @@
         <div class="nomina-summary-item">
             <div class="label">Total a Pagar</div>
             <div class="value">{{ total_general|peso }}</div>
+        </div>
+        <div class="nomina-summary-item">
+            <div class="label">Seleccionado</div>
+            <div class="value" id="totalSeleccionado">$0</div>
         </div>
     </div>
 </div>
@@ -114,6 +124,7 @@
         <table class="table table-hover mb-0">
             <thead>
                 <tr>
+                    <th style="width:40px"></th>
                     <th>Fecha</th>
                     <th>Proceso</th>
                     <th class="text-end">Cantidad</th>
@@ -124,6 +135,7 @@
             <tbody>
                 {% for r in grupo.registros %}
                 <tr>
+                    <td><input type="checkbox" class="form-check-input chk-registro" name="registros" value="{{ r.pk }}" data-monto="{{ r.total_pago }}"></td>
                     <td>{{ r.fecha }}</td>
                     <td class="fw-semibold">{{ r.proceso_referencia.proceso_base.nombre }}</td>
                     <td class="text-end">{{ r.cantidad_realizada|miles }} pares</td>
@@ -134,7 +146,7 @@
             </tbody>
             <tfoot>
                 <tr class="table-light">
-                    <td colspan="2" class="fw-semibold">Subtotal Orden #{{ grupo.orden.numero }}</td>
+                    <td colspan="3" class="fw-semibold">Subtotal Orden #{{ grupo.orden.numero }}</td>
                     <td class="text-end fw-semibold">{{ grupo.pares|miles }} pares</td>
                     <td></td>
                     <td class="text-end fw-bold text-success">{{ grupo.subtotal|peso }}</td>
@@ -165,19 +177,55 @@
                     <i class="bi bi-exclamation-triangle" style="font-size:1.5rem;color:#f59e0b;"></i>
                 </div>
                 <h5 class="fw-bold">Confirmar Pago</h5>
-                <p class="text-muted">Se marcarán todos los registros pendientes de <strong>{{ empleado.nombre }}</strong> como pagados por un total de <strong class="text-success">{{ total_general|peso }}</strong>.</p>
+                <p class="text-muted">Se marcarán <strong id="modalCantidad">0</strong> proceso(s) de <strong>{{ empleado.nombre }}</strong> como pagado(s) por un total de <strong class="text-success" id="modalTotal">$0</strong>.</p>
                 <p class="text-muted small">Esta acción no se puede deshacer.</p>
                 <div class="d-flex gap-2 justify-content-center mt-3">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form method="post" action="{% url 'produccion:nomina_marcar_pagado' empleado.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-warning"><i class="bi bi-check2-all me-1"></i>Confirmar Pago</button>
-                    </form>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" form="formPago" class="btn btn-warning"><i class="bi bi-check2-all me-1"></i>Confirmar Pago</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+</form>
+
+<script>
+(function() {
+    const chks = document.querySelectorAll('.chk-registro');
+    const master = document.getElementById('chkSeleccionarTodos');
+    const totalLbl = document.getElementById('totalSeleccionado');
+    const modalCantidad = document.getElementById('modalCantidad');
+    const modalTotal = document.getElementById('modalTotal');
+    const btnAbrir = document.getElementById('btnAbrirModal');
+
+    function fmtPeso(n) {
+        const entero = Math.round(n);
+        return '$' + entero.toLocaleString('es-CO').replace(/,/g, '.');
+    }
+
+    function actualizar() {
+        let total = 0;
+        let count = 0;
+        chks.forEach(c => {
+            if (c.checked) {
+                total += parseFloat(c.dataset.monto) || 0;
+                count += 1;
+            }
+        });
+        totalLbl.textContent = fmtPeso(total);
+        modalCantidad.textContent = count;
+        modalTotal.textContent = fmtPeso(total);
+        btnAbrir.disabled = count === 0;
+        return count;
+    }
+
+    chks.forEach(c => c.addEventListener('change', actualizar));
+    master.addEventListener('change', function() {
+        chks.forEach(c => { c.checked = master.checked; });
+        actualizar();
+    });
+})();
+</script>
 
 {% else %}
 <div class="card border-0">

@@ -34,10 +34,13 @@ def _verificar_orden_finalizada(orden):
 
 
 def _verificar_orden_pagada(orden):
-    """Si todos los registros de trabajo de la orden están pagados, marca la orden como Pagada."""
-    total_registros = orden.registros_trabajo.count()
+    """Marca la orden como Pagada solo cuando todos los procesos de la referencia
+    tienen registro de trabajo Y todos están pagados."""
+    total_procesos = orden.referencia.procesos.count()
+    if total_procesos == 0:
+        return
     pagados = orden.registros_trabajo.filter(pagado=True).count()
-    if total_registros > 0 and pagados >= total_registros and orden.estado != 'Pagado':
+    if pagados >= total_procesos and orden.estado != 'Pagado':
         orden.estado = 'Pagado'
         orden.save(update_fields=['estado', 'fecha_pagado'])
 
@@ -641,22 +644,30 @@ def nomina_pdf(request, empleado_pk):
 
 
 def nomina_marcar_pagado(request, empleado_pk):
-    """Marca todos los registros pendientes del empleado como pagados."""
+    """Marca como pagados los registros seleccionados (POST 'registros') del empleado."""
     empleado = get_object_or_404(Empleado, pk=empleado_pk)
-    if request.method == 'POST':
-        registros_pendientes = RegistroTrabajo.objects.filter(empleado=empleado, pagado=False)
-        # Guardar las órdenes afectadas antes de actualizar
-        ordenes_ids = set(registros_pendientes.values_list('orden_id', flat=True))
-        cantidad = registros_pendientes.update(pagado=True, fecha_pago=timezone.localdate())
-        # Verificar si alguna orden quedó completamente pagada
-        for oid in ordenes_ids:
-            try:
-                orden = OrdenProduccion.objects.select_related('referencia').get(pk=oid)
-                _verificar_orden_pagada(orden)
-            except OrdenProduccion.DoesNotExist:
-                pass
-        messages.success(request, f'Se marcaron {cantidad} registros como pagados para {empleado.nombre}.')
-        return redirect('produccion:nomina')
+    if request.method != 'POST':
+        return redirect('produccion:nomina_detalle', empleado_pk=empleado.pk)
+
+    ids = request.POST.getlist('registros')
+    if not ids:
+        messages.warning(request, 'Selecciona al menos un proceso para marcar como pagado.')
+        return redirect('produccion:nomina_detalle', empleado_pk=empleado.pk)
+
+    registros = RegistroTrabajo.objects.filter(
+        pk__in=ids, empleado=empleado, pagado=False,
+    )
+    ordenes_ids = set(registros.values_list('orden_id', flat=True))
+    cantidad = registros.update(pagado=True, fecha_pago=timezone.localdate())
+
+    for oid in ordenes_ids:
+        try:
+            orden = OrdenProduccion.objects.select_related('referencia').get(pk=oid)
+            _verificar_orden_pagada(orden)
+        except OrdenProduccion.DoesNotExist:
+            pass
+
+    messages.success(request, f'Se marcaron {cantidad} proceso(s) como pagado(s) para {empleado.nombre}.')
     return redirect('produccion:nomina_detalle', empleado_pk=empleado.pk)
 
 
