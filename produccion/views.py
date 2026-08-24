@@ -32,6 +32,7 @@ def _verificar_orden_finalizada(orden):
     if total_procesos > 0 and registrados >= total_procesos and orden.estado not in ('Finalizado', 'Entregado', 'Pagado'):
         orden.estado = 'Finalizado'
         orden.save(update_fields=['estado', 'fecha_finalizado'])
+        _asegurar_descuento_materiales(orden)
 
 
 def _verificar_orden_pagada(orden):
@@ -54,6 +55,44 @@ def _descontar_materiales(orden):
         Material.objects.filter(pk=c.material_id).update(
             cantidad_stock=F('cantidad_stock') - cantidad_total
         )
+
+
+def _asegurar_descuento_materiales(orden):
+    """Descuenta el material en cuanto la orden deja de estar Pendiente.
+
+    Es el único punto donde se toca el stock por producción. Idempotente y a
+    prueba de concurrencia: el flag `materiales_descontados` se toma con un
+    UPDATE condicional, así que si dos requests entran a la vez solo una
+    alcanza a descontar.
+
+    Devuelve True si el descuento ocurrió en esta llamada.
+    """
+    if orden.estado == 'Pendiente' or orden.materiales_descontados:
+        return False
+
+    with transaction.atomic():
+        tomado = OrdenProduccion.objects.filter(
+            pk=orden.pk, materiales_descontados=False,
+        ).update(materiales_descontados=True)
+        if not tomado:
+            # Otra request ya lo descontó.
+            orden.materiales_descontados = True
+            return False
+        _descontar_materiales(orden)
+
+    orden.materiales_descontados = True
+    return True
+
+
+def _iniciar_produccion(orden):
+    """Pasa la orden a En Proceso si sigue Pendiente y descuenta el material.
+
+    Devuelve True si el descuento ocurrió en esta llamada.
+    """
+    if orden.estado == 'Pendiente':
+        orden.estado = 'En Proceso'
+        orden.save(update_fields=['estado', 'fecha_en_proceso'])
+    return _asegurar_descuento_materiales(orden)
 
 
 # ─── Cliente ───
@@ -237,8 +276,14 @@ def orden_editar(request, pk):
     if request.method == 'POST':
         form = OrdenEditarForm(request.POST, instance=orden)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Orden actualizada exitosamente.')
+            orden = form.save()
+            if _asegurar_descuento_materiales(orden):
+                messages.success(
+                    request,
+                    'Orden actualizada. Al salir de Pendiente se descontó el stock de materiales.',
+                )
+            else:
+                messages.success(request, 'Orden actualizada exitosamente.')
             return redirect('produccion:orden_detalle', pk=orden.pk)
     else:
         form = OrdenEditarForm(instance=orden)
@@ -307,10 +352,8 @@ def orden_pdf(request, pk):
         except Exception:
             imagen_uri = ''
 
-    # Cambiar estado a "En Proceso" si está en Pendiente
-    if orden.estado == 'Pendiente':
-        orden.estado = 'En Proceso'
-        orden.save(update_fields=['estado', 'fecha_en_proceso'])
+    # Generar la orden la pone En Proceso y dispara el descuento de material.
+    _iniciar_produccion(orden)
 
     fecha_generacion = timezone.localdate()
 
@@ -340,17 +383,14 @@ def registro_agregar(request, orden_pk):
     if request.method == 'POST':
         form = RegistroTrabajoForm(request.POST)
         if form.is_valid():
-            descontado_ahora = False
             with transaction.atomic():
                 registro = form.save(commit=False)
                 registro.orden = orden
                 registro.cantidad_realizada = orden.cantidad_total
                 registro.save()
-                if not orden.materiales_descontados:
-                    _descontar_materiales(orden)
-                    orden.materiales_descontados = True
-                    orden.save(update_fields=['materiales_descontados'])
-                    descontado_ahora = True
+            # Registrar trabajo implica que la orden arrancó: si seguía
+            # Pendiente pasa a En Proceso y ahí se descuenta el material.
+            descontado_ahora = _iniciar_produccion(orden)
             _verificar_orden_finalizada(orden)
             if descontado_ahora:
                 messages.success(request, 'Registro guardado. Stock de materiales descontado.')
@@ -421,11 +461,8 @@ def registro_trabajo(request):
                         proceso_referencia=proceso_ref,
                         cantidad_realizada=cantidad,
                     )
-                    if not orden.materiales_descontados:
-                        _descontar_materiales(orden)
-                        orden.materiales_descontados = True
-                        orden.save(update_fields=['materiales_descontados'])
-                        ordenes_descontadas += 1
+                if _iniciar_produccion(orden):
+                    ordenes_descontadas += 1
                 registros_creados += 1
             except IntegrityError:
                 errores.append(f'Orden #{orden.numero} - {proceso_ref.proceso_base.nombre}: ya registrado.')
@@ -685,21 +722,55 @@ def nomina_marcar_pagado(request, empleado_pk):
 
 
 def nomina_historial(request):
-    """Historial de registros ya pagados."""
+    """Historial de pagos de un empleado, agrupado por día de pago."""
     empleado_pk = request.GET.get('empleado')
     empleados = Empleado.objects.all().order_by('nombre')
-    registros = []
+
+    empleado = None
+    dias_pago = []
+    total_general = 0
+    total_pares = 0
 
     if empleado_pk:
+        empleado = get_object_or_404(Empleado, pk=empleado_pk)
         registros = (
             RegistroTrabajo.objects
-            .filter(pagado=True, empleado_id=empleado_pk)
-            .select_related('orden__referencia', 'proceso_referencia__proceso_base', 'empleado')
-            .order_by('-fecha_pago', '-fecha')
+            .filter(pagado=True, empleado=empleado)
+            .select_related('orden__referencia', 'proceso_referencia__proceso_base')
+            .order_by('-fecha_pago', 'orden__numero', 'fecha')
         )
+
+        # Los registros vienen ordenados por fecha_pago descendente, así que
+        # el dict conserva el orden de los días sin reordenar después. Un
+        # fecha_pago nulo (dato viejo o corregido a mano) cae en su propio
+        # grupo, que el template rotula aparte.
+        grupos = {}
+        for r in registros:
+            dia = grupos.setdefault(r.fecha_pago, {
+                'fecha': r.fecha_pago,
+                'registros': [],
+                'subtotal': 0,
+                'pares': 0,
+                'ordenes': set(),
+            })
+            pago = r.cantidad_realizada * r.proceso_referencia.precio_mano_obra
+            dia['registros'].append(r)
+            dia['subtotal'] += pago
+            dia['pares'] += r.cantidad_realizada
+            dia['ordenes'].add(r.orden_id)
+            total_general += pago
+            total_pares += r.cantidad_realizada
+
+        for dia in grupos.values():
+            dia['total_ordenes'] = len(dia['ordenes'])
+        dias_pago = list(grupos.values())
 
     return render(request, 'produccion/nomina_historial.html', {
         'empleados': empleados,
-        'registros': registros,
+        'empleado': empleado,
         'empleado_seleccionado': empleado_pk,
+        'dias_pago': dias_pago,
+        'total_general': total_general,
+        'total_pares': total_pares,
+        'total_dias': len(dias_pago),
     })

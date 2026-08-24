@@ -4,6 +4,71 @@
 {% block titulo %}Historial de Pagos{% endblock %}
 {% block page_title %}Historial de Pagos{% endblock %}
 
+{% block extra_css %}
+<style>
+    .hist-header-card {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        color: #fff;
+        border-radius: var(--radius-lg);
+        padding: 1.5rem 2rem;
+        margin-bottom: 1.5rem;
+    }
+    .hist-header-card .empleado-nombre {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    .hist-header-card .empleado-doc {
+        opacity: .75;
+        font-size: .875rem;
+    }
+    .hist-summary {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    .hist-summary-item .label {
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        opacity: .7;
+    }
+    .hist-summary-item .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    .dia-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    .dia-card-header {
+        background: var(--bg-body);
+        padding: .75rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--border);
+    }
+    .dia-card-header .dia-fecha {
+        font-weight: 600;
+        font-size: .95rem;
+    }
+    .dia-card-header .dia-meta {
+        font-size: .8rem;
+        color: var(--text-muted, #6b7280);
+    }
+    .dia-card-header .dia-subtotal {
+        font-weight: 700;
+        color: #16a34a;
+        font-size: 1.05rem;
+    }
+</style>
+{% endblock %}
+
 {% block contenido %}
 <div class="page-header">
     <h2>Historial de Pagos</h2>
@@ -29,46 +94,79 @@
     </div>
 </div>
 
-{% if registros %}
-<div class="card">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>Fecha Trabajo</th>
-                        <th>Fecha Pago</th>
-                        <th>Orden</th>
-                        <th>Referencia</th>
-                        <th>Proceso</th>
-                        <th class="text-end">Cant.</th>
-                        <th class="text-end">Precio Unit.</th>
-                        <th class="text-end">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in registros %}
-                    <tr>
-                        <td>{{ r.fecha }}</td>
-                        <td>{{ r.fecha_pago }}</td>
-                        <td><a href="{% url 'produccion:orden_detalle' r.orden.pk %}" class="text-decoration-none">#{{ r.orden.numero }}</a></td>
-                        <td>{{ r.orden.referencia.codigo }}</td>
-                        <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
-                        <td class="text-end">{{ r.cantidad_realizada|miles }}</td>
-                        <td class="text-end">{{ r.proceso_referencia.precio_mano_obra|peso }}</td>
-                        <td class="text-end fw-bold text-success">{{ r.total_pago|peso }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% if dias_pago %}
+<div class="hist-header-card">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <div class="empleado-nombre">{{ empleado.nombre }}</div>
+            <div class="empleado-doc">{{ empleado.rol }} &middot; CC {{ empleado.documento }}</div>
+        </div>
+    </div>
+    <div class="hist-summary">
+        <div class="hist-summary-item">
+            <div class="label">Total pagado</div>
+            <div class="value">{{ total_general|peso }}</div>
+        </div>
+        <div class="hist-summary-item">
+            <div class="label">Pares trabajados</div>
+            <div class="value">{{ total_pares|miles }}</div>
+        </div>
+        <div class="hist-summary-item">
+            <div class="label">Días de pago</div>
+            <div class="value">{{ total_dias }}</div>
         </div>
     </div>
 </div>
+
+{% for dia in dias_pago %}
+<div class="dia-card">
+    <div class="dia-card-header">
+        <div>
+            <div class="dia-fecha"><i class="bi bi-calendar-check me-1"></i>{% if dia.fecha %}Pago del {{ dia.fecha|date:"l j \d\e F \d\e Y" }}{% else %}Pagos sin fecha registrada{% endif %}</div>
+            <div class="dia-meta">
+                {{ dia.registros|length }} proceso{{ dia.registros|length|pluralize }} &middot;
+                {{ dia.total_ordenes }} orden{{ dia.total_ordenes|pluralize:"es" }} &middot;
+                {{ dia.pares|miles }} par{{ dia.pares|pluralize:"es" }}
+            </div>
+        </div>
+        <div class="dia-subtotal">{{ dia.subtotal|peso }}</div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Orden</th>
+                    <th>Referencia</th>
+                    <th>Proceso</th>
+                    <th>Fecha trabajo</th>
+                    <th class="text-end">Cant.</th>
+                    <th class="text-end">Precio unit.</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in dia.registros %}
+                <tr>
+                    <td><a href="{% url 'produccion:orden_detalle' r.orden.pk %}" class="text-decoration-none">#{{ r.orden.numero }}</a></td>
+                    <td>{{ r.orden.referencia.codigo }}</td>
+                    <td>{{ r.proceso_referencia.proceso_base.nombre }}</td>
+                    <td>{{ r.fecha|date:"d/m/Y" }}</td>
+                    <td class="text-end">{{ r.cantidad_realizada|miles }}</td>
+                    <td class="text-end">{{ r.proceso_referencia.precio_mano_obra|peso }}</td>
+                    <td class="text-end fw-bold text-success">{{ r.total_pago|peso }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+
 {% elif empleado_seleccionado %}
 <div class="card">
     <div class="card-body text-center py-5">
         <i class="bi bi-inbox text-muted" style="font-size:2.5rem"></i>
-        <p class="text-muted mt-2">No se encontraron pagos para este empleado.</p>
+        <p class="text-muted mt-2">{{ empleado.nombre }} todavía no tiene pagos registrados.</p>
     </div>
 </div>
 {% endif %}
