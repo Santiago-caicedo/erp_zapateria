@@ -1,0 +1,23 @@
+{# Zona de eliminación definitiva. La vista solo pasa `resumen_forzado`
+   cuando hay bloqueos y el usuario es superusuario. #}
+<div class="alert alert-danger text-start mt-3 mb-0">
+    <div class="fw-semibold mb-2">
+        <i class="bi bi-exclamation-octagon me-1"></i>Eliminación definitiva (superusuario)
+    </div>
+    <p class="small mb-2">
+        Borra <strong>{{ nombre_objeto }}</strong> arrastrando todo lo que depende de él.
+        No se puede deshacer. Se eliminaría:
+    </p>
+    <ul class="small mb-3 ps-3">
+        {% for fila in resumen_forzado %}
+        <li><strong>{{ fila.cantidad }}</strong> &times; {{ fila.nombre }}</li>
+        {% endfor %}
+    </ul>
+    <form method="post" onsubmit="return prompt('Escribe exactamente &quot;{{ nombre_objeto|escapejs }}&quot; para confirmar la eliminación definitiva:') === '{{ nombre_objeto|escapejs }}';">
+        {% csrf_token %}
+        <input type="hidden" name="forzar" value="si">
+        <button type="submit" class="btn btn-danger btn-sm">
+            <i class="bi bi-trash3 me-1"></i>Eliminar definitivamente
+        </button>
+    </form>
+</div>

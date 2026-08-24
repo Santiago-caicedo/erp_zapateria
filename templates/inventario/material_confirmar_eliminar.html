@@ -8,14 +8,23 @@
     <div class="confirm-card-body">
         <div class="confirm-icon"><i class="bi bi-exclamation-triangle"></i></div>
         <h4>Eliminar material</h4>
+        {% if bloqueos %}
+        {% include "includes/bloqueos_eliminar.html" with etiqueta="las siguientes referencias consumen este material" %}
+        {% if resumen_forzado %}
+        {% include "includes/eliminar_forzado.html" %}
+        {% endif %}
+        {% else %}
         <p>¿Estás seguro que deseas eliminar <strong>{{ material.nombre }}</strong>? Esta acción no se puede deshacer.</p>
+        {% endif %}
     </div>
     <div class="confirm-card-actions">
+        {% if not bloqueos %}
         <form method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i>Eliminar</button>
         </form>
-        <a href="{% url 'inventario:material_lista' %}" class="btn btn-secondary">Cancelar</a>
+        {% endif %}
+        <a href="{% url 'inventario:material_lista' %}" class="btn btn-secondary">{% if bloqueos %}Volver{% else %}Cancelar{% endif %}</a>
     </div>
 </div>
 {% endblock %}

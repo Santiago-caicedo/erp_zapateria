@@ -22,6 +22,8 @@ class Material(models.Model):
 
     class Meta:
         unique_together = ['tipo', 'nombre']
+        verbose_name = "Material"
+        verbose_name_plural = "Materiales"
 
     def __str__(self):
         return f"{self.nombre} ({self.unidad_medida})"
@@ -30,6 +32,10 @@ class Material(models.Model):
 # 3. Catálogo de Procesos (Corte, Guarnición, etc.)
 class ProcesoBase(models.Model):
     nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Proceso")
+
+    class Meta:
+        verbose_name = "Proceso"
+        verbose_name_plural = "Procesos"
 
     def __str__(self):
         return self.nombre
@@ -54,6 +60,10 @@ class Referencia(models.Model):
     descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
     imagen = models.ImageField(upload_to='referencias/', blank=True, null=True, verbose_name="Imagen")
 
+    class Meta:
+        verbose_name = "Referencia"
+        verbose_name_plural = "Referencias"
+
     def __str__(self):
         return f"{self.codigo} - {self.tipo_zapato.nombre}"
 
@@ -66,6 +76,8 @@ class ConsumoMaterial(models.Model):
 
     class Meta:
         unique_together = ['referencia', 'material']
+        verbose_name = "Consumo de material"
+        verbose_name_plural = "Consumos de material"
 
     def __str__(self):
         return f"{self.referencia.codigo} consume {self.cantidad_consumida} de {self.material.nombre}"
@@ -76,6 +88,10 @@ class ProcesoReferencia(models.Model):
     referencia = models.ForeignKey(Referencia, on_delete=models.CASCADE, related_name='procesos')
     proceso_base = models.ForeignKey(ProcesoBase, on_delete=models.PROTECT)
     precio_mano_obra = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Precio Mano de Obra")
+
+    class Meta:
+        verbose_name = "Proceso de referencia"
+        verbose_name_plural = "Procesos de referencia"
 
     def __str__(self):
         return f"{self.proceso_base.nombre} para {self.referencia.codigo} - ${self.precio_mano_obra}"

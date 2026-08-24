@@ -14,6 +14,7 @@ from .models import Cliente, OrdenProduccion, RegistroTrabajo
 from .forms import ClienteForm, OrdenProduccionForm, OrdenEditarForm, RegistroTrabajoForm
 from empleados.models import Empleado
 from inventario.models import Material, Referencia
+from config.eliminacion import contexto_bloqueo, procesar_borrado
 
 
 def _fmt_peso(valor):
@@ -89,11 +90,23 @@ def cliente_editar(request, pk):
 
 def cliente_eliminar(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
+    # OrdenProduccion.cliente es PROTECT: sus órdenes bloquean el borrado.
+    bloqueos = cliente.ordenes.select_related('referencia').order_by('-numero')
+
     if request.method == 'POST':
-        cliente.delete()
-        messages.success(request, 'Cliente eliminado exitosamente.')
-        return redirect('produccion:cliente_lista')
-    return render(request, 'produccion/cliente_confirmar_eliminar.html', {'cliente': cliente})
+        return procesar_borrado(
+            request, cliente, cliente.nombre,
+            'produccion:cliente_lista',
+            'Cliente eliminado exitosamente.',
+            f'No se puede eliminar a "{cliente.nombre}" porque tiene órdenes de '
+            'producción asociadas.',
+        )
+
+    return render(request, 'produccion/cliente_confirmar_eliminar.html', {
+        'cliente': cliente,
+        'nombre_objeto': cliente.nombre,
+        **contexto_bloqueo(request, cliente, bloqueos),
+    })
 
 
 # ─── OrdenProduccion ───

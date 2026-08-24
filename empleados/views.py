@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from config.eliminacion import contexto_bloqueo, procesar_borrado
 from .models import Empleado
 from .forms import EmpleadoForm
 
@@ -36,11 +37,27 @@ def empleado_editar(request, pk):
 
 def empleado_eliminar(request, pk):
     empleado = get_object_or_404(Empleado, pk=pk)
+    # RegistroTrabajo.empleado es PROTECT: sus registros bloquean el borrado.
+    bloqueos = (
+        empleado.trabajos
+        .select_related('orden', 'proceso_referencia__proceso_base')
+        .order_by('-fecha')
+    )
+
     if request.method == 'POST':
-        empleado.delete()
-        messages.success(request, 'Empleado eliminado exitosamente.')
-        return redirect('empleados:lista')
-    return render(request, 'empleados/empleado_confirmar_eliminar.html', {'empleado': empleado})
+        return procesar_borrado(
+            request, empleado, empleado.nombre,
+            'empleados:lista',
+            'Empleado eliminado exitosamente.',
+            f'No se puede eliminar a {empleado.nombre} porque tiene registros de '
+            'trabajo asociados.',
+        )
+
+    return render(request, 'empleados/empleado_confirmar_eliminar.html', {
+        'empleado': empleado,
+        'nombre_objeto': empleado.nombre,
+        **contexto_bloqueo(request, empleado, bloqueos),
+    })
 
 
 def empleado_detalle(request, pk):

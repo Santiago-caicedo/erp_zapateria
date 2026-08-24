@@ -11,6 +11,10 @@ class Cliente(models.Model):
     telefono = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono")
     direccion = models.TextField(blank=True, null=True, verbose_name="Dirección")
 
+    class Meta:
+        verbose_name = "Cliente"
+        verbose_name_plural = "Clientes"
+
     def __str__(self):
         return self.nombre
 
@@ -52,6 +56,10 @@ class OrdenProduccion(models.Model):
     # Se pone en True al crear el primer RegistroTrabajo, para no descontar
     # de nuevo cuando se registren los procesos siguientes de la misma orden.
     materiales_descontados = models.BooleanField(default=False, verbose_name="Materiales Descontados")
+
+    class Meta:
+        verbose_name = "Orden de producción"
+        verbose_name_plural = "Órdenes de producción"
 
     @property
     def cantidad_total(self):
@@ -103,6 +111,8 @@ class RegistroTrabajo(models.Model):
     fecha_pago = models.DateField(null=True, blank=True, verbose_name="Fecha de Pago")
 
     class Meta:
+        verbose_name = "Registro de trabajo"
+        verbose_name_plural = "Registros de trabajo"
         constraints = [
             models.UniqueConstraint(
                 fields=['orden', 'proceso_referencia'],

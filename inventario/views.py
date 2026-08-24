@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import F
 from django.http import JsonResponse
+from config.eliminacion import contexto_bloqueo, procesar_borrado
 from .models import TipoMaterial, Material, ProcesoBase, TipoZapato, Referencia, ConsumoMaterial, ProcesoReferencia
 from .forms import (
     TipoMaterialForm, MaterialForm, ProcesoBaseForm, ReferenciaForm,
@@ -45,11 +46,23 @@ def tipo_material_editar(request, pk):
 
 def tipo_material_eliminar(request, pk):
     tipo = get_object_or_404(TipoMaterial, pk=pk)
+    # Material.tipo es PROTECT: los materiales de este tipo bloquean el borrado.
+    bloqueos = tipo.materiales.order_by('nombre')
+
     if request.method == 'POST':
-        tipo.delete()
-        messages.success(request, 'Tipo de material eliminado exitosamente.')
-        return redirect('inventario:tipo_material_lista')
-    return render(request, 'inventario/tipo_material_confirmar_eliminar.html', {'tipo': tipo})
+        return procesar_borrado(
+            request, tipo, tipo.nombre,
+            'inventario:tipo_material_lista',
+            'Tipo de material eliminado exitosamente.',
+            f'No se puede eliminar el tipo "{tipo.nombre}" porque tiene materiales '
+            'asociados. Elimina o reasigna esos materiales primero.',
+        )
+
+    return render(request, 'inventario/tipo_material_confirmar_eliminar.html', {
+        'tipo': tipo,
+        'nombre_objeto': tipo.nombre,
+        **contexto_bloqueo(request, tipo, bloqueos),
+    })
 
 
 # ─── Material ───
@@ -116,12 +129,30 @@ def material_editar(request, pk):
 
 
 def material_eliminar(request, pk):
-    material = get_object_or_404(Material, pk=pk)
+    material = get_object_or_404(Material.objects.select_related('tipo'), pk=pk)
+    # ConsumoMaterial.material es PROTECT: las referencias que lo consumen
+    # bloquean el borrado.
+    bloqueos = (
+        Referencia.objects
+        .filter(consumos__material=material)
+        .select_related('tipo_zapato')
+        .order_by('codigo')
+    )
+
     if request.method == 'POST':
-        material.delete()
-        messages.success(request, 'Material eliminado exitosamente.')
-        return redirect('inventario:material_lista')
-    return render(request, 'inventario/material_confirmar_eliminar.html', {'material': material})
+        return procesar_borrado(
+            request, material, material.nombre,
+            'inventario:material_lista',
+            'Material eliminado exitosamente.',
+            f'No se puede eliminar "{material.nombre}" porque hay referencias que lo '
+            'consumen. Quítalo primero de esas referencias.',
+        )
+
+    return render(request, 'inventario/material_confirmar_eliminar.html', {
+        'material': material,
+        'nombre_objeto': material.nombre,
+        **contexto_bloqueo(request, material, bloqueos),
+    })
 
 
 # ─── ProcesoBase ───
@@ -158,11 +189,29 @@ def proceso_editar(request, pk):
 
 def proceso_eliminar(request, pk):
     proceso = get_object_or_404(ProcesoBase, pk=pk)
+    # ProcesoReferencia.proceso_base es PROTECT: las referencias que lo llevan
+    # bloquean el borrado.
+    bloqueos = (
+        Referencia.objects
+        .filter(procesos__proceso_base=proceso)
+        .select_related('tipo_zapato')
+        .order_by('codigo')
+    )
+
     if request.method == 'POST':
-        proceso.delete()
-        messages.success(request, 'Proceso eliminado exitosamente.')
-        return redirect('inventario:proceso_lista')
-    return render(request, 'inventario/proceso_confirmar_eliminar.html', {'proceso': proceso})
+        return procesar_borrado(
+            request, proceso, proceso.nombre,
+            'inventario:proceso_lista',
+            'Proceso eliminado exitosamente.',
+            f'No se puede eliminar el proceso "{proceso.nombre}" porque está asignado a '
+            'referencias. Quítalo primero de esas referencias.',
+        )
+
+    return render(request, 'inventario/proceso_confirmar_eliminar.html', {
+        'proceso': proceso,
+        'nombre_objeto': proceso.nombre,
+        **contexto_bloqueo(request, proceso, bloqueos),
+    })
 
 
 # ─── Referencia ───
@@ -229,11 +278,24 @@ def api_materiales_por_tipo(request, tipo_pk):
 
 def referencia_eliminar(request, pk):
     referencia = get_object_or_404(Referencia, pk=pk)
+    # OrdenProduccion.referencia es PROTECT: las órdenes que la usan bloquean
+    # el borrado (sus consumos y procesos sí se borran en cascada).
+    bloqueos = referencia.ordenes.select_related('cliente').order_by('-numero')
+
     if request.method == 'POST':
-        referencia.delete()
-        messages.success(request, 'Referencia eliminada exitosamente.')
-        return redirect('inventario:referencia_lista')
-    return render(request, 'inventario/referencia_confirmar_eliminar.html', {'referencia': referencia})
+        return procesar_borrado(
+            request, referencia, referencia.codigo,
+            'inventario:referencia_lista',
+            'Referencia eliminada exitosamente.',
+            f'No se puede eliminar la referencia "{referencia.codigo}" porque tiene '
+            'órdenes de producción asociadas.',
+        )
+
+    return render(request, 'inventario/referencia_confirmar_eliminar.html', {
+        'referencia': referencia,
+        'nombre_objeto': referencia.codigo,
+        **contexto_bloqueo(request, referencia, bloqueos),
+    })
 
 
 # ─── ConsumoMaterial (dentro de una referencia) ───
